@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,7 +16,7 @@
 </head>
 <body>
 <div id="panel">
-  <strong>Functional Vision Simulation v3</strong>
+  <strong>Functional Vision Simulation v4</strong>
   <div class="small">Training approximation, not a literal reconstruction of the person's vision.</div>
   <label>Useful viewing distance: <span id="distVal">0.5 m</span>
     <input id="dist" type="range" min="0.3" max="2.0" value="0.5" step="0.1">
@@ -25,6 +26,7 @@
   <button id="toggle">Show normal vision</button>
   <div id="status">SIMULATION ON</div>
   <div class="small">In VR: sound buttons on your right; vision controls on your left. Touch controls with an index fingertip. Browser controls also remain available.</div>
+  <div class="small">Yellow cube: pinch thumb and index finger close to it, move your hand, then open fingers to release.</div>
   <div class="small" id="handStatus">Hand tracking: waiting for VR</div>
 </div>
 
@@ -54,8 +56,11 @@
     <a-sphere position="0 1.65 0" radius="0.2" color="#8b6f61"></a-sphere>
     <a-cylinder position="0 0.95 0" radius="0.28" height="1.15" color="#42546b"></a-cylinder>
   </a-entity>
+  <!-- Grabbable yellow cube: pinch thumb and index finger near the cube. -->
   <a-box id="near" position="-0.35 1.25 -0.55" width="0.16" height="0.16" depth="0.16" color="#e9d84b"
          vision-target="label: close object"></a-box>
+  <a-text id="grabHint" value="Pinch near yellow cube to grab" position="-0.38 1.43 -0.57"
+          width="0.65" align="center" color="#202020"></a-text>
 
   <!-- Six-button training panel, placed to the right and within arm's reach. -->
   <a-entity id="buttonStation" position="0.65 1.37 -0.95">
@@ -267,13 +272,85 @@ scene.addEventListener('enter-vr',()=>{
   if(audioContext && audioContext.state==='suspended')audioContext.resume().catch(()=>{});
 });
 scene.addEventListener('exit-vr',()=>{$('#handStatus').textContent='Hand tracking: waiting for VR';});
-scene.addEventListener('loaded',()=>{
-  function animate(t){
-    if($('#motion').checked){phase=t/1600;$('#person').object3D.position.x=Math.sin(phase)*1.8;}
-    requestAnimationFrame(animate);
+// Scene tick continues while the headset is in immersive VR (unlike a separate
+// window.requestAnimationFrame loop, which may pause in XR).
+AFRAME.registerComponent('moving-person',{
+  tick:function(time){
+    const person=$('#person');
+    if(!person || !$('#motion').checked)return;
+    person.object3D.position.x=Math.sin(time/1600)*1.8;
   }
-  requestAnimationFrame(animate);
 });
+scene.setAttribute('moving-person','');
+
+// Finger pinch grab. We use tracked joints rather than controller buttons.
+// This is an experimental interaction, not a physics-based grasp.
+AFRAME.registerComponent('pinch-grab-cube',{
+  init:function(){
+    this.cube=$('#near').object3D;
+    this.hint=$('#grabHint');
+    this.grabbedBy=null;
+    this.wasPinching={left:false,right:false};
+    this.tip=new THREE.Vector3();
+    this.thumb=new THREE.Vector3();
+    this.center=new THREE.Vector3();
+    this.offset=new THREE.Vector3();
+    this.cubeWorld=new THREE.Vector3();
+    this.newWorld=new THREE.Vector3();
+    this.local=new THREE.Vector3();
+  },
+  tick:function(){
+    if(!scene.is('vr-mode')){
+      this.grabbedBy=null;
+      this.wasPinching.left=false;this.wasPinching.right=false;
+      return;
+    }
+    const xr=scene.renderer && scene.renderer.xr;
+    if(!xr)return;
+    for(let i=0;i<2;i++){
+      const hand=xr.getHand(i);
+      const index=hand && hand.joints && hand.joints['index-finger-tip'];
+      const thumb=hand && hand.joints && hand.joints['thumb-tip'];
+      const key=i===0?'left':'right';
+      if(!index || !thumb || !index.visible || !thumb.visible){
+        if(this.grabbedBy===key)this.release();
+        this.wasPinching[key]=false;
+        continue;
+      }
+      index.getWorldPosition(this.tip);
+      thumb.getWorldPosition(this.thumb);
+      this.center.copy(this.tip).add(this.thumb).multiplyScalar(0.5);
+      const separation=this.tip.distanceTo(this.thumb);
+      const pinching=separation<0.035;
+      const released=separation>0.055;
+      if(this.grabbedBy===key){
+        if(released){this.release();this.wasPinching[key]=false;continue;}
+        // Maintain the original hand-to-cube offset while moving the cube.
+        this.newWorld.copy(this.center).add(this.offset);
+        const parent=this.cube.parent;
+        this.local.copy(this.newWorld);
+        parent.worldToLocal(this.local);
+        this.cube.position.copy(this.local);
+      }else if(!this.grabbedBy && pinching && !this.wasPinching[key]){
+        this.cube.getWorldPosition(this.cubeWorld);
+        if(this.center.distanceTo(this.cubeWorld)<0.18){
+          this.grabbedBy=key;
+          this.offset.copy(this.cubeWorld).sub(this.center);
+          $('#near').setAttribute('color','#fff176');
+          this.hint.setAttribute('value','Release pinch to drop');
+        }
+      }
+      if(!pinching)this.wasPinching[key]=false;
+      else this.wasPinching[key]=true;
+    }
+  },
+  release:function(){
+    this.grabbedBy=null;
+    $('#near').setAttribute('color','#e9d84b');
+    this.hint.setAttribute('value','Pinch near yellow cube to grab');
+  }
+});
+scene.setAttribute('pinch-grab-cube','');
 </script>
 </body>
 </html>
