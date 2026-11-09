@@ -16,10 +16,13 @@
 </head>
 <body>
 <div id="panel">
-  <strong>Functional Vision Simulation v5</strong>
+  <strong>Functional Vision Simulation v6</strong>
   <div class="small">Training approximation, not a literal reconstruction of the person's vision.</div>
   <label>Useful viewing distance: <span id="distVal">0.5 m</span>
     <input id="dist" type="range" min="0.3" max="2.0" value="0.5" step="0.1">
+  </label>
+  <label>Peripheral field: <span id="fieldVal">100%</span>
+    <input id="field" type="range" min="20" max="100" value="100" step="5">
   </label>
   <label><input id="glare" type="checkbox"> Strong glare</label>
   <label><input id="motion" type="checkbox" checked> Moving person</label>
@@ -75,19 +78,24 @@
 
   <!-- In-headset settings: fingertip-operated, always visible in VR. -->
   <a-entity id="settingsStation" position="-0.68 1.39 -0.95">
-    <a-box width="0.74" height="0.72" depth="0.055" color="#243746"></a-box>
-    <a-text value="VISION SETTINGS" align="center" width="0.70" position="0 0.300 0.035" color="#ffffff"></a-text>
-    <a-text id="vrDistance" value="Distance: 0.5 m" align="center" width="0.67" position="0 0.215 0.036" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="distanceDown" position="-0.19 0.115 0.048" width="0.24" height="0.115" depth="0.04" color="#477bba"></a-box>
-    <a-text value="- 0.1m" align="center" width="0.56" position="-0.19 0.107 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="distanceUp" position="0.19 0.115 0.048" width="0.24" height="0.115" depth="0.04" color="#477bba"></a-box>
-    <a-text value="+ 0.1m" align="center" width="0.56" position="0.19 0.107 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="glare" position="0 -0.030 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
-    <a-text id="vrGlare" value="Glare: OFF" align="center" width="0.65" position="0 -0.040 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="motion" position="0 -0.155 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
-    <a-text id="vrMotion" value="Moving person: ON" align="center" width="0.65" position="0 -0.165 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="simulation" position="0 -0.280 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
-    <a-text id="vrSimulation" value="Simulation: ON" align="center" width="0.65" position="0 -0.290 0.075" color="#ffffff"></a-text>
+    <a-box width="0.74" height="0.94" depth="0.055" color="#243746"></a-box>
+    <a-text value="VISION SETTINGS" align="center" width="0.70" position="0 0.410 0.035" color="#ffffff"></a-text>
+    <a-text id="vrDistance" value="Distance: 0.5 m" align="center" width="0.67" position="0 0.330 0.036" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="distanceDown" position="-0.19 0.235 0.048" width="0.24" height="0.115" depth="0.04" color="#477bba"></a-box>
+    <a-text value="- 0.1m" align="center" width="0.56" position="-0.19 0.227 0.075" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="distanceUp" position="0.19 0.235 0.048" width="0.24" height="0.115" depth="0.04" color="#477bba"></a-box>
+    <a-text value="+ 0.1m" align="center" width="0.56" position="0.19 0.227 0.075" color="#ffffff"></a-text>
+    <a-text id="vrField" value="Peripheral field: 100%" align="center" width="0.67" position="0 0.140 0.036" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="fieldDown" position="-0.19 0.055 0.048" width="0.24" height="0.10" depth="0.04" color="#477bba"></a-box>
+    <a-text value="Field -" align="center" width="0.56" position="-0.19 0.048 0.075" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="fieldUp" position="0.19 0.055 0.048" width="0.24" height="0.10" depth="0.04" color="#477bba"></a-box>
+    <a-text value="Field +" align="center" width="0.56" position="0.19 0.048 0.075" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="glare" position="0 -0.070 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
+    <a-text id="vrGlare" value="Glare: OFF" align="center" width="0.65" position="0 -0.080 0.075" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="motion" position="0 -0.190 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
+    <a-text id="vrMotion" value="Moving person: ON" align="center" width="0.65" position="0 -0.200 0.075" color="#ffffff"></a-text>
+    <a-box class="touch-control" data-action="simulation" position="0 -0.310 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
+    <a-text id="vrSimulation" value="Simulation: ON" align="center" width="0.65" position="0 -0.320 0.075" color="#ffffff"></a-text>
   </a-entity>
 
   <!-- A-Frame requests and maintains tracked hand joints for each hand. -->
@@ -96,6 +104,8 @@
 
   <a-entity id="rig" position="0 0 0">
     <a-camera id="cam" position="0 1.6 0" look-controls wasd-controls>
+      <!-- Camera-locked shader: clear centre, gradually darkened periphery. -->
+      <a-plane id="fieldOverlay" position="0 0 -0.48" width="2" height="2" peripheral-field></a-plane>
       <a-entity id="glareOverlay" geometry="primitive:plane;width:0.7;height:0.7"
                 material="shader:flat;color:#fff;transparent:true;opacity:0"
                 position="-0.28 0 -0.5"></a-entity>
@@ -110,7 +120,7 @@
 </a-scene>
 
 <script>
-let simOn=true, useful=0.5, phase=0;
+let simOn=true, useful=0.5, fieldPercent=100;
 const $=s=>document.querySelector(s);
 const scene=$('a-scene');
 
@@ -132,6 +142,41 @@ AFRAME.registerComponent('vision-target',{
       if(o.material){o.material.transparent=true;o.material.opacity=visibility;}
     });
   }
+});
+
+// Camera-fixed visual field overlay. 100% disables the effect entirely.
+// This is a visual training approximation, not measured visual-field degrees.
+AFRAME.registerComponent('peripheral-field', {
+  init:function(){
+    const material=new THREE.ShaderMaterial({
+      transparent:true, depthTest:false, depthWrite:false,
+      uniforms:{radius:{value:1.5}},
+      vertexShader:`varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader:`
+        uniform float radius;
+        varying vec2 vUv;
+        void main(){
+          vec2 p=(vUv-vec2(0.5))*2.0;
+          float r=length(p);
+          float opacity=smoothstep(radius-0.10,radius+0.12,r)*0.96;
+          gl_FragColor=vec4(0.0,0.0,0.0,opacity);
+        }
+      `
+    });
+    this.material=material;
+    this.el.addEventListener('object3dset',e=>{
+      if(e.detail.type!=='mesh')return;
+      const mesh=this.el.getObject3D('mesh');
+      if(mesh){mesh.material=material;mesh.renderOrder=999;mesh.frustumCulled=false;}
+    });
+    const mesh=this.el.getObject3D('mesh');
+    if(mesh){mesh.material=material;mesh.renderOrder=999;mesh.frustumCulled=false;}
+  },
+  tick:function(){
+    this.material.uniforms.radius.value=(!simOn || fieldPercent===100)
+      ? 1.5 : 0.12+0.95*(fieldPercent-20)/80;
+  },
+  remove:function(){this.material.dispose();}
 });
 
 // Original, generated test tones (no audio files or downloads required).
@@ -181,6 +226,9 @@ AFRAME.registerComponent('sound-key',{
 // Use THREE's tracked WebXR hand joints. No pinch gesture is required.
 // In-VR controls share the same fingertip contact system as the sound panel.
 function syncSettings(){
+  $('#field').value=fieldPercent;
+  $('#fieldVal').textContent=fieldPercent+'%';
+  $('#vrField').setAttribute('value','Peripheral field: '+fieldPercent+'%');
   $('#dist').value=useful.toFixed(1);
   $('#distVal').textContent=useful.toFixed(1)+' m';
   $('#vrDistance').setAttribute('value','Distance: '+useful.toFixed(1)+' m');
@@ -196,6 +244,8 @@ function syncSettings(){
 function applyAction(action){
   if(action==='distanceDown')useful=Math.max(0.3,Math.round((useful-0.1)*10)/10);
   if(action==='distanceUp')useful=Math.min(2,Math.round((useful+0.1)*10)/10);
+  if(action==='fieldDown')fieldPercent=Math.max(20,fieldPercent-5);
+  if(action==='fieldUp')fieldPercent=Math.min(100,fieldPercent+5);
   if(action==='glare')$('#glare').checked=!$('#glare').checked;
   if(action==='motion')$('#motion').checked=!$('#motion').checked;
   if(action==='simulation')simOn=!simOn;
@@ -256,6 +306,7 @@ AFRAME.registerComponent('finger-button-touch',{
 });
 scene.setAttribute('finger-button-touch','');
 
+$('#field').addEventListener('input',e=>{fieldPercent=Number(e.target.value);syncSettings();});
 $('#dist').addEventListener('input',e=>{useful=parseFloat(e.target.value);syncSettings();});
 $('#glare').addEventListener('change',syncSettings);
 $('#motion').addEventListener('change',syncSettings);
