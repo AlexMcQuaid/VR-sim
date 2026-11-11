@@ -16,7 +16,7 @@
 </head>
 <body>
 <div id="panel">
-  <strong>Functional Vision Simulation v6</strong>
+  <strong>Functional Vision Simulation v7 — VR / MR test</strong>
   <div class="small">Training approximation, not a literal reconstruction of the person's vision.</div>
   <label>Useful viewing distance: <span id="distVal">0.5 m</span>
     <input id="dist" type="range" min="0.3" max="2.0" value="0.5" step="0.1">
@@ -26,44 +26,48 @@
   </label>
   <label><input id="glare" type="checkbox"> Strong glare</label>
   <label><input id="motion" type="checkbox" checked> Moving person</label>
+  <div class="small"><strong>Choose a mode:</strong> use the headset's Enter VR or Enter AR button below the scene. AR = mixed-reality passthrough (if supported).</div>
   <button id="toggle">Show normal vision</button>
+  <div class="small" id="modeStatus">Mode: browser preview</div>
   <div id="status">SIMULATION ON</div>
-  <div class="small">In VR: sound buttons on your right; vision controls on your left. Touch controls with an index fingertip. Browser controls also remain available.</div>
-  <div class="small">Cube and cup: pinch thumb and index finger near an object, move, then release.</div>
-  <div class="small" id="handStatus">Hand tracking: waiting for VR</div>
+  <div class="small">In VR or MR: sound buttons on your right; vision controls on your left. Touch controls with an index fingertip. Browser controls also remain available.</div>
+  <div class="small">In VR: pinch to grab the virtual cube or cup. In MR: handle only real, safe objects; virtual room objects are hidden.</div>
+  <div class="small" id="handStatus">Hand tracking: waiting for XR</div>
 </div>
 
-<a-scene renderer="antialias: true; colorManagement: true"
+<a-scene renderer="antialias: true; colorManagement: true; alpha: true"
          background="color:#d9d4ca"
          xr-mode-ui="enabled: true"
+         ar-mode-ui="enabled: true"
          webxr="optionalFeatures: hand-tracking, local-floor, bounded-floor">
   <a-assets><a-mixin id="wall" material="roughness:1"></a-mixin></a-assets>
 
-  <a-entity light="type:ambient; intensity:0.75"></a-entity>
-  <a-entity light="type:directional; intensity:0.7" position="-2 4 2"></a-entity>
-  <a-plane rotation="-90 0 0" width="8" height="8" color="#9b8d78"></a-plane>
-  <a-plane position="0 2 -4" width="8" height="4" color="#ded8cd"></a-plane>
-  <a-plane position="-4 2 0" rotation="0 90 0" width="8" height="4" color="#d4cec3"></a-plane>
-  <a-plane position="4 2 0" rotation="0 -90 0" width="8" height="4" color="#d4cec3"></a-plane>
+  <a-entity id="virtualRoom">
+    <a-entity light="type:ambient; intensity:0.75"></a-entity>
+    <a-entity light="type:directional; intensity:0.7" position="-2 4 2"></a-entity>
+    <a-plane rotation="-90 0 0" width="8" height="8" color="#9b8d78"></a-plane>
+    <a-plane position="0 2 -4" width="8" height="4" color="#ded8cd"></a-plane>
+    <a-plane position="-4 2 0" rotation="0 90 0" width="8" height="4" color="#d4cec3"></a-plane>
+    <a-plane position="4 2 0" rotation="0 -90 0" width="8" height="4" color="#d4cec3"></a-plane>
 
-  <a-plane id="window" position="-2.6 2.2 -3.96" width="1.6" height="1.7"
-           material="color:#fff; emissive:#fff; emissiveIntensity:0.7"></a-plane>
-  <a-box position="0 0.72 -2.25" width="2.2" height="0.12" depth="0.9" color="#6f4f35"></a-box>
-  <a-box position="-0.85 0.35 -2.25" width="0.12" height="0.7" depth="0.12" color="#59402f"></a-box>
-  <a-box position="0.85 0.35 -2.25" width="0.12" height="0.7" depth="0.12" color="#59402f"></a-box>
-  <a-cylinder id="mug" position="0.25 0.91 -2.25" radius="0.11" height="0.28" color="#f4f1e9"
-              vision-target="label: mug" pinch-grabbable></a-cylinder>
-  <a-box id="card" position="-0.45 0.87 -2.22" width="0.34" height="0.03" depth="0.24" color="#111"
-         vision-target="label: communication card"></a-box>
-  <a-entity id="person" position="2 0 -3" vision-target="label: person">
-    <a-sphere position="0 1.65 0" radius="0.2" color="#8b6f61"></a-sphere>
-    <a-cylinder position="0 0.95 0" radius="0.28" height="1.15" color="#42546b"></a-cylinder>
+    <a-plane id="window" position="-2.6 2.2 -3.96" width="1.6" height="1.7"
+             material="color:#fff; emissive:#fff; emissiveIntensity:0.7"></a-plane>
+    <a-box position="0 0.72 -2.25" width="2.2" height="0.12" depth="0.9" color="#6f4f35"></a-box>
+    <a-box position="-0.85 0.35 -2.25" width="0.12" height="0.7" depth="0.12" color="#59402f"></a-box>
+    <a-box position="0.85 0.35 -2.25" width="0.12" height="0.7" depth="0.12" color="#59402f"></a-box>
+    <a-cylinder id="mug" position="0.25 0.91 -2.25" radius="0.11" height="0.28" color="#f4f1e9"
+                vision-target="label: mug" pinch-grabbable></a-cylinder>
+    <a-box id="card" position="-0.45 0.87 -2.22" width="0.34" height="0.03" depth="0.24" color="#111"
+           vision-target="label: communication card"></a-box>
+    <a-entity id="person" position="2 0 -3" vision-target="label: person">
+      <a-sphere position="0 1.65 0" radius="0.2" color="#8b6f61"></a-sphere>
+      <a-cylinder position="0 0.95 0" radius="0.28" height="1.15" color="#42546b"></a-cylinder>
+    </a-entity>
+    <a-box id="near" position="-0.35 1.25 -0.55" width="0.16" height="0.16" depth="0.16" color="#e9d84b"
+           vision-target="label: close object" pinch-grabbable></a-box>
   </a-entity>
-  <!-- Grabbable yellow cube: pinch thumb and index finger near the cube. -->
-  <a-box id="near" position="-0.35 1.25 -0.55" width="0.16" height="0.16" depth="0.16" color="#e9d84b"
-         vision-target="label: close object" pinch-grabbable></a-box>
 
-  <!-- Six-button training panel, placed to the right and within arm's reach. -->
+  <!-- Panels remain visible in VR and MR. -->
   <a-entity id="buttonStation" position="0.65 1.37 -0.95">
     <a-box width="0.70" height="0.49" depth="0.055" color="#293443"></a-box>
     <a-text value="TOUCH A BUTTON" align="center" width="0.65" position="0 0.195 0.034" color="#ffffff"></a-text>
@@ -76,7 +80,6 @@
     <a-text id="buttonFeedback" value="Touch or click" align="center" width="0.65" position="0 -0.207 0.035" color="#ffffff"></a-text>
   </a-entity>
 
-  <!-- In-headset settings: fingertip-operated, always visible in VR. -->
   <a-entity id="settingsStation" position="-0.68 1.39 -0.95">
     <a-box width="0.74" height="0.94" depth="0.055" color="#243746"></a-box>
     <a-text value="VISION SETTINGS" align="center" width="0.70" position="0 0.410 0.035" color="#ffffff"></a-text>
@@ -98,13 +101,11 @@
     <a-text id="vrSimulation" value="Simulation: ON" align="center" width="0.65" position="0 -0.320 0.075" color="#ffffff"></a-text>
   </a-entity>
 
-  <!-- A-Frame requests and maintains tracked hand joints for each hand. -->
   <a-entity id="leftHand" hand-tracking-controls="hand: left; modelStyle: mesh"></a-entity>
   <a-entity id="rightHand" hand-tracking-controls="hand: right; modelStyle: mesh"></a-entity>
 
   <a-entity id="rig" position="0 0 0">
     <a-camera id="cam" position="0 1.6 0" look-controls wasd-controls>
-      <!-- Camera-locked shader: clear centre, gradually darkened periphery. -->
       <a-plane id="fieldOverlay" position="0 0 -0.48" width="2" height="2" peripheral-field></a-plane>
       <a-entity id="glareOverlay" geometry="primitive:plane;width:0.7;height:0.7"
                 material="shader:flat;color:#fff;transparent:true;opacity:0"
@@ -144,8 +145,6 @@ AFRAME.registerComponent('vision-target',{
   }
 });
 
-// Camera-fixed visual field overlay. 100% disables the effect entirely.
-// This is a visual training approximation, not measured visual-field degrees.
 AFRAME.registerComponent('peripheral-field', {
   init:function(){
     const material=new THREE.ShaderMaterial({
@@ -179,7 +178,6 @@ AFRAME.registerComponent('peripheral-field', {
   remove:function(){this.material.dispose();}
 });
 
-// Original, generated test tones (no audio files or downloads required).
 const frequencies=[261.63,293.66,329.63,349.23,392.00,440.00];
 let audioContext=null;
 function playTone(index){
@@ -223,8 +221,6 @@ AFRAME.registerComponent('sound-key',{
   }
 });
 
-// Use THREE's tracked WebXR hand joints. No pinch gesture is required.
-// In-VR controls share the same fingertip contact system as the sound panel.
 function syncSettings(){
   $('#field').value=fieldPercent;
   $('#fieldVal').textContent=fieldPercent+'%';
@@ -264,7 +260,7 @@ AFRAME.registerComponent('finger-button-touch',{
     });
   },
   tick:function(){
-    if(!scene.is('vr-mode'))return;
+    if(!scene.is('vr-mode') && !scene.is('ar-mode'))return;
     const xr=scene.renderer && scene.renderer.xr;
     if(!xr)return;
     let handsVisible=0;
@@ -316,9 +312,24 @@ scene.addEventListener('enter-vr',()=>{
   $('#handStatus').textContent='Hand tracking: show hands to headset';
   if(audioContext && audioContext.state==='suspended')audioContext.resume().catch(()=>{});
 });
-scene.addEventListener('exit-vr',()=>{$('#handStatus').textContent='Hand tracking: waiting for VR';});
-// Scene tick continues while the headset is in immersive VR (unlike a separate
-// window.requestAnimationFrame loop, which may pause in XR).
+scene.addEventListener('exit-vr',()=>{$('#handStatus').textContent='Hand tracking: waiting for XR';});
+
+function setEnvironmentMode(){
+  const isAR=scene.is('ar-mode');
+  const isVR=scene.is('vr-mode');
+  $('#virtualRoom').object3D.visible=!isAR;
+  $('#modeStatus').textContent=isAR
+    ? 'Mode: MIXED REALITY (passthrough test)'
+    : isVR ? 'Mode: FULL VR' : 'Mode: browser preview';
+  if(isAR)scene.removeAttribute('background');
+  else scene.setAttribute('background','color','#d9d4ca');
+}
+scene.addEventListener('enter-ar',setEnvironmentMode);
+scene.addEventListener('exit-ar',setEnvironmentMode);
+scene.addEventListener('enter-vr',setEnvironmentMode);
+scene.addEventListener('exit-vr',setEnvironmentMode);
+scene.addEventListener('loaded',setEnvironmentMode);
+
 AFRAME.registerComponent('moving-person',{
   tick:function(time){
     const person=$('#person');
@@ -328,8 +339,6 @@ AFRAME.registerComponent('moving-person',{
 });
 scene.setAttribute('moving-person','');
 
-// Shared grab manager: one object per hand, no object can be held by two hands.
-// Grabbable objects opt in with the pinch-grabbable attribute.
 AFRAME.registerComponent('pinch-grabbable', {});
 AFRAME.registerComponent('pinch-grab-manager', {
   init:function(){
@@ -349,7 +358,7 @@ AFRAME.registerComponent('pinch-grab-manager', {
     this.holds[key]=null;
   },
   tick:function(){
-    if(!scene.is('vr-mode')){
+    if(!scene.is('vr-mode') || scene.is('ar-mode')){
       this.release('left');this.release('right');
       this.wasPinching.left=false;this.wasPinching.right=false;
       return;
