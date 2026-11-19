@@ -4,1720 +4,851 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Functional Vision Simulator v8</title>
+<title>Functional Vision Simulator v8.1</title>
 <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 <style>
-body {
-  margin:0;
-  background:#15191d;
-  color:white;
-  font-family:system-ui,sans-serif;
-}
-#panel {
-  position:fixed;
-  top:12px;
-  left:12px;
-  z-index:20;
-  background:#17212bed;
-  padding:15px;
-  border-radius:12px;
-  width:300px;
-  max-width:calc(100vw - 54px);
-}
-label {display:block;margin:12px 0}
-input[type=range] {width:100%}
-button {
-  border:0;
-  border-radius:7px;
-  padding:10px;
-  font:inherit;
-  cursor:pointer;
-}
-.modeButtons {
-  display:flex;
-  gap:8px;
-  margin:12px 0;
-}
-.modeButtons button {
-  flex:1;
-  background:#467fa9;
-  color:white;
-}
-#toggle {
-  background:#a94f4f;
-  color:white;
-}
-.small {
-  font-size:12px;
-  color:#d0d8de;
-  margin-top:9px;
-}
-#status {margin-top:10px;font-weight:bold}
+body{margin:0;background:#15191d;color:white;font-family:system-ui,sans-serif}
+#panel{position:fixed;top:12px;left:12px;z-index:20;background:#17212bed;padding:15px;border-radius:12px;width:290px;max-width:calc(100vw - 54px)}
+button{border:0;border-radius:7px;padding:10px;font:inherit;cursor:pointer;background:#467fa9;color:white}
+.line{display:flex;gap:8px;margin:10px 0}
+.line button{flex:1}
+label{display:block;margin:10px 0}
+input[type=range]{width:100%}
+.small{font-size:12px;color:#d0d8de;margin-top:9px}
+.browserPage{display:none}
+.browserPage.active{display:block}
 </style>
 </head>
 <body>
-
 <div id="panel">
-  <strong>Functional Vision Simulator v8</strong>
-  <div class="small">Residential environment</div>
-
-  <div class="modeButtons">
-    <button id="enterVR">Enter VR</button>
-    <button id="enterAR">Enter AR</button>
-  </div>
-
-  <label>
-    Viewing distance:
-    <span id="distVal">0.5 m</span>
-    <input id="dist" type="range"
-      min="0.3" max="2" step="0.1" value="0.5">
-  </label>
-
-  <label>
-    Peripheral field:
-    <span id="fieldVal">100%</span>
-    <input id="field" type="range"
-      min="20" max="100" step="5" value="100">
-  </label>
-
-  <label>
-    <input id="glare" type="checkbox">
-    Strong glare
-  </label>
-
-  <label>
-    <input id="motion" type="checkbox" checked>
-    Moving person (VR)
-  </label>
-
-  <div id="browserLighting">
-    <strong>Room lighting</strong>
-    <div class="modeButtons">
-      <button data-light="morning">Morning</button>
-      <button data-light="day">Day</button>
-    </div>
-    <div class="modeButtons">
-      <button data-light="dusk">Dusk</button>
-      <button data-light="night">Night</button>
-    </div>
-  </div>
-
-  <button id="toggle">Simulation OFF</button>
-
-  <div id="status">SIMULATION ON</div>
-  <div id="modeStatus" class="small">
-    Browser preview
-  </div>
-  <div id="lightingStatus" class="small">
-    Lighting: Day
-  </div>
-  <div class="small">
-    Left wrist: settings.
-    Right index finger: touch controls.
-  </div>
+<strong>Functional Vision Simulator v8.1</strong>
+<div class="line"><button id="enterVR">Enter VR</button><button id="enterAR">Enter AR</button></div>
+<div class="line"><button data-page="vision">Vision</button><button data-page="lighting">Lighting</button><button data-page="environment">Environment</button></div>
+<section id="browser-vision" class="browserPage active">
+<label>Viewing distance: <span id="distVal">0.5 m</span><input id="dist" type="range" min="0.3" max="2" step="0.1" value="0.5"></label>
+<label>Peripheral field: <span id="fieldVal">100%</span><input id="field" type="range" min="20" max="100" step="5" value="100"></label>
+<label><input id="glare" type="checkbox"> Strong glare</label>
+<button id="toggle">Simulation OFF</button>
+</section>
+<section id="browser-lighting" class="browserPage">
+<div class="line"><button data-light="morning">Morning</button><button data-light="afternoon">Afternoon</button></div>
+<div class="line"><button data-light="dusk">Dusk</button><button data-light="night">Night</button></div>
+<div class="line"><button id="browserFloor">Floor lamp: OFF</button><button id="browserCeiling">Overhead: OFF</button></div>
+</section>
+<section id="browser-environment" class="browserPage">
+<label><input id="motion" type="checkbox" checked> Moving person (VR)</label>
+</section>
+<div id="status" class="small">SIMULATION ON</div>
+<div id="modeStatus" class="small">Browser preview</div>
+<div id="lightingStatus" class="small">Lighting: Afternoon</div>
+<div class="small">Left wrist: menu. Right index finger: touch and grab.</div>
 </div>
 
-<a-scene
-  renderer="antialias:true;colorManagement:true;alpha:true"
-  background="color:#b8cbd5"
-  xr-mode-ui="enabled:false"
-  webxr="optionalFeatures:hand-tracking,local-floor,bounded-floor">
-
-  <!-- VR ENVIRONMENT -->
-  <a-entity id="virtualRoom">
-
-    <!-- ROOM LIGHTING -->
-    <a-entity id="ambientLight"
-      light="type:ambient;color:#fff;intensity:0.85">
-    </a-entity>
-
-    <a-entity id="sunLight"
-      position="-3 4 -1"
-      light="type:directional;color:#fff;intensity:1.1;castShadow:false">
-    </a-entity>
-
-    <a-entity id="ceilingLight"
-      position="0 2.8 -1.5"
-      light="type:point;color:#fff1d8;intensity:0;distance:7">
-    </a-entity>
-
-    <a-entity id="floorLampLight"
-      position="2.25 1.65 -2.6"
-      light="type:point;color:#ffe0a0;intensity:0;distance:4">
-    </a-entity>
-
-    <!-- FLOOR -->
-    <a-plane
-      rotation="-90 0 0"
-      width="8" height="8"
-      color="#927b65"
-      material="roughness:0.9">
-    </a-plane>
-
-    <!-- FLOORBOARD SEAMS -->
-    <a-entity id="floorboards"></a-entity>
-
-    <!-- WALLS -->
-    <a-plane
-      position="0 1.6 -4"
-      width="8" height="3.2"
-      color="#d7d0c5">
-    </a-plane>
-
-    <a-plane
-      position="-4 1.6 0"
-      rotation="0 90 0"
-      width="8" height="3.2"
-      color="#d7d0c5">
-    </a-plane>
-
-    <a-plane
-      position="4 1.6 0"
-      rotation="0 -90 0"
-      width="8" height="3.2"
-      color="#d7d0c5">
-    </a-plane>
-
-    <a-plane
-      position="0 3.2 0"
-      rotation="90 0 0"
-      width="8" height="8"
-      color="#f4f0e8">
-    </a-plane>
-
-    <!-- BASEBOARDS -->
-    <a-box position="0 0.09 -3.95"
-      width="8" height="0.18" depth="0.045"
-      color="#f4f0e8"></a-box>
-
-    <a-box position="-3.95 0.09 0"
-      width="0.045" height="0.18" depth="8"
-      color="#f4f0e8"></a-box>
-
-    <a-box position="3.95 0.09 0"
-      width="0.045" height="0.18" depth="8"
-      color="#f4f0e8"></a-box>
-
-    <!-- WINDOW -->
-    <a-entity id="window"
-      position="-1.9 1.85 -3.94">
-
-      <a-plane id="windowGlass"
-        width="2.2" height="1.5"
-        color="#8db8d0">
-      </a-plane>
-
-      <a-box position="0 0 0.035"
-        width="2.28" height="0.065"
-        depth="0.07" color="#fff9ee">
-      </a-box>
-
-      <a-box position="0 0 0.035"
-        width="0.065" height="1.57"
-        depth="0.07" color="#fff9ee">
-      </a-box>
-
-      <a-box position="-1.13 0 0.035"
-        width="0.08" height="1.6"
-        depth="0.07" color="#fff9ee">
-      </a-box>
-
-      <a-box position="1.13 0 0.035"
-        width="0.08" height="1.6"
-        depth="0.07" color="#fff9ee">
-      </a-box>
-
-      <a-box position="0 0.78 0.035"
-        width="2.34" height="0.08"
-        depth="0.09" color="#fff9ee">
-      </a-box>
-
-      <a-box position="0 -0.78 0.08"
-        width="2.45" height="0.09"
-        depth="0.2" color="#fff9ee">
-      </a-box>
-
-      <!-- CURTAINS -->
-      <a-box position="-1.27 0 0.13"
-        width="0.26" height="1.75"
-        depth="0.11" color="#a7b0a0">
-      </a-box>
-
-      <a-box position="1.27 0 0.13"
-        width="0.26" height="1.75"
-        depth="0.11" color="#a7b0a0">
-      </a-box>
-
-      <a-cylinder
-        position="0 0.95 0.17"
-        rotation="0 0 90"
-        radius="0.025" height="2.9"
-        color="#484848">
-      </a-cylinder>
-    </a-entity>
-
-    <!-- RUG -->
-    <a-plane
-      position="0 0.012 -1.7"
-      rotation="-90 0 0"
-      width="3.6" height="2.6"
-      color="#a9a79b"
-      material="roughness:1">
-    </a-plane>
-
-    <a-plane
-      position="0 0.014 -1.7"
-      rotation="-90 0 0"
-      width="3.2" height="2.2"
-      color="#bcb8a8">
-    </a-plane>
-
-    <!-- SOFA -->
-    <a-entity id="sofa"
-      position="0 0 -3.05">
-
-      <a-box position="0 0.39 0"
-        width="2.35" height="0.45"
-        depth="0.87" color="#66776e">
-      </a-box>
-
-      <a-box position="0 0.83 -0.34"
-        width="2.35" height="0.78"
-        depth="0.25" color="#596b63">
-      </a-box>
-
-      <a-box position="-1.09 0.60 0"
-        width="0.25" height="0.56"
-        depth="0.93" color="#596b63">
-      </a-box>
-
-      <a-box position="1.09 0.60 0"
-        width="0.25" height="0.56"
-        depth="0.93" color="#596b63">
-      </a-box>
-
-      <!-- SEAT CUSHIONS -->
-      <a-box position="-0.51 0.64 0.12"
-        width="0.98" height="0.13"
-        depth="0.67" color="#73857b">
-      </a-box>
-
-      <a-box position="0.51 0.64 0.12"
-        width="0.98" height="0.13"
-        depth="0.67" color="#73857b">
-      </a-box>
-
-      <!-- BACK CUSHIONS -->
-      <a-box position="-0.5 0.97 -0.23"
-        width="0.94" height="0.48"
-        depth="0.16" color="#718278">
-      </a-box>
-
-      <a-box position="0.5 0.97 -0.23"
-        width="0.94" height="0.48"
-        depth="0.16" color="#718278">
-      </a-box>
-
-      <!-- THROW PILLOWS -->
-      <a-box
-        position="-0.76 0.84 0.20"
-        rotation="0 0 15"
-        width="0.38" height="0.38"
-        depth="0.13" color="#c9a36e">
-      </a-box>
-
-      <a-box
-        position="0.78 0.85 0.20"
-        rotation="0 0 -14"
-        width="0.36" height="0.36"
-        depth="0.13" color="#d7c9b1">
-      </a-box>
-
-      <!-- THROW BLANKET -->
-      <a-box
-        position="0.68 0.73 0.38"
-        rotation="0 0 -8"
-        width="0.65" height="0.055"
-        depth="0.40" color="#bba78f">
-      </a-box>
-    </a-entity>
-
-    <!-- COFFEE TABLE -->
-    <a-entity id="coffeeTable"
-      position="0 0 -1.55">
-
-      <a-box position="0 0.44 0"
-        width="1.55" height="0.10"
-        depth="0.75" color="#77553c">
-      </a-box>
-
-      <a-box position="-0.66 0.22 -0.27"
-        width="0.09" height="0.44"
-        depth="0.09" color="#513b2c">
-      </a-box>
-
-      <a-box position="0.66 0.22 -0.27"
-        width="0.09" height="0.44"
-        depth="0.09" color="#513b2c">
-      </a-box>
-
-      <a-box position="-0.66 0.22 0.27"
-        width="0.09" height="0.44"
-        depth="0.09" color="#513b2c">
-      </a-box>
-
-      <a-box position="0.66 0.22 0.27"
-        width="0.09" height="0.44"
-        depth="0.09" color="#513b2c">
-      </a-box>
-
-      <!-- INTERACTIVE MUG -->
-      <a-entity id="mug"
-        position="0.42 0.64 -0.13"
-        vision-target pinch-grabbable>
-        <a-cylinder
-          radius="0.085" height="0.25"
-          color="#e8e2d5">
-        </a-cylinder>
-        <a-torus
-          position="0.105 0 0"
-          rotation="0 90 0"
-          radius="0.067"
-          radius-tubular="0.014"
-          color="#e8e2d5">
-        </a-torus>
-      </a-entity>
-
-      <!-- INTERACTIVE REMOTE -->
-      <a-entity id="remote"
-        position="-0.37 0.54 0.13"
-        vision-target pinch-grabbable>
-
-        <a-box
-          width="0.095" height="0.035"
-          depth="0.23"
-          color="#24272b">
-        </a-box>
-
-        <a-cylinder
-          position="0 0.022 -0.07"
-          radius="0.017" height="0.007"
-          color="#c74d4d">
-        </a-cylinder>
-
-        <a-cylinder
-          position="0 0.022 0"
-          radius="0.025" height="0.007"
-          color="#777">
-        </a-cylinder>
-      </a-entity>
-
-      <!-- BOOK -->
-      <a-entity id="book"
-        position="0 0.54 0.05"
-        vision-target pinch-grabbable>
-
-        <a-box
-          width="0.25" height="0.035"
-          depth="0.33"
-          color="#365b70">
-        </a-box>
-
-        <a-box position="0 0.019 0"
-          width="0.22" height="0.005"
-          depth="0.29"
-          color="#e8e0cb">
-        </a-box>
-      </a-entity>
-    </a-entity>
-
-    <!-- TV STAND -->
-    <a-entity position="0 0 1.15">
-
-      <a-box position="0 0.37 0"
-        width="2.1" height="0.65"
-        depth="0.43" color="#65503f">
-      </a-box>
-
-      <a-box position="0 0.71 0"
-        width="2.18" height="0.055"
-        depth="0.48" color="#49372d">
-      </a-box>
-
-      <a-box position="0 1.28 0.03"
-        width="1.72" height="1.0"
-        depth="0.075" color="#15191c">
-      </a-box>
-
-      <a-plane position="0 1.28 -0.012"
-        width="1.61" height="0.89"
-        color="#263a48">
-      </a-plane>
-
-      <a-box position="0 0.83 0.02"
-        width="0.10" height="0.18"
-        depth="0.10" color="#222">
-      </a-box>
-    </a-entity>
-
-    <!-- SIDE TABLE -->
-    <a-entity position="2.05 0 -2.65">
-      <a-cylinder position="0 0.53 0"
-        radius="0.32" height="0.07"
-        color="#795a41">
-      </a-cylinder>
-
-      <a-cylinder position="0 0.27 0"
-        radius="0.055" height="0.52"
-        color="#5a4535">
-      </a-cylinder>
-
-      <a-cylinder position="0 0.04 0"
-        radius="0.23" height="0.08"
-        color="#5a4535">
-      </a-cylinder>
-    </a-entity>
-
-    <!-- FLOOR LAMP -->
-    <a-entity id="lamp"
-      position="2.55 0 -3.25">
-
-      <a-cylinder
-        position="0 0.045 0"
-        radius="0.21" height="0.09"
-        color="#353a3e">
-      </a-cylinder>
-
-      <a-cylinder
-        position="0 0.85 0"
-        radius="0.025" height="1.65"
-        color="#353a3e">
-      </a-cylinder>
-
-      <a-cone id="lampShade"
-        position="0 1.76 0"
-        radius-bottom="0.31"
-        radius-top="0.17"
-        height="0.43"
-        color="#d9c9ad">
-      </a-cone>
-    </a-entity>
-
-    <!-- BOOKSHELF -->
-    <a-entity position="3.35 0 -1.4"
-      rotation="0 -90 0">
-
-      <a-box position="-0.6 1.0 0"
-        width="0.10" height="2"
-        depth="0.43" color="#74543e">
-      </a-box>
-
-      <a-box position="0.6 1.0 0"
-        width="0.10" height="2"
-        depth="0.43" color="#74543e">
-      </a-box>
-
-      <a-box position="0 0.13 0"
-        width="1.3" height="0.07"
-        depth="0.43" color="#74543e">
-      </a-box>
-
-      <a-box position="0 0.75 0"
-        width="1.3" height="0.07"
-        depth="0.43" color="#74543e">
-      </a-box>
-
-      <a-box position="0 1.37 0"
-        width="1.3" height="0.07"
-        depth="0.43" color="#74543e">
-      </a-box>
-
-      <a-box position="0 1.96 0"
-        width="1.3" height="0.07"
-        depth="0.43" color="#74543e">
-      </a-box>
-
-      <a-entity id="shelfBooks"></a-entity>
-    </a-entity>
-
-    <!-- PLANT -->
-    <a-entity position="-2.9 0 -2.9">
-
-      <a-cylinder position="0 0.22 0"
-        radius-bottom="0.22"
-        radius-top="0.29"
-        height="0.44"
-        color="#b17a58">
-      </a-cylinder>
-
-      <a-cylinder position="0 0.78 0"
-        radius="0.025" height="0.9"
-        color="#506b39">
-      </a-cylinder>
-
-      <a-sphere position="-0.22 1.0 0"
-        scale="0.36 0.18 0.20"
-        color="#547c49">
-      </a-sphere>
-
-      <a-sphere position="0.24 1.12 0"
-        scale="0.36 0.18 0.20"
-        color="#416c40">
-      </a-sphere>
-
-      <a-sphere position="0 1.36 0"
-        scale="0.25 0.35 0.22"
-        color="#64884d">
-      </a-sphere>
-    </a-entity>
-
-    <!-- WALL ART -->
-    <a-entity position="1.85 2.15 -3.92">
-      <a-box width="1.05" height="0.72"
-        depth="0.045" color="#5e4a3c">
-      </a-box>
-      <a-plane position="0 0 0.03"
-        width="0.94" height="0.61"
-        color="#c2c8b5">
-      </a-plane>
-      <a-circle position="-0.20 0.13 0.035"
-        radius="0.15" color="#d7ad7b">
-      </a-circle>
-      <a-triangle
-        vertex-a="-0.44 -0.27 0.04"
-        vertex-b="0.12 0.19 0.04"
-        vertex-c="0.42 -0.27 0.04"
-        color="#758b79">
-      </a-triangle>
-    </a-entity>
-
-    <!-- EXISTING MOVING PERSON -->
-    <a-entity id="person"
-      position="2 0 -0.4"
-      vision-target>
-
-      <a-sphere position="0 1.65 0"
-        radius="0.19" color="#987c68">
-      </a-sphere>
-
-      <a-cylinder position="0 1.02 0"
-        radius="0.26" height="1.05"
-        color="#405b72">
-      </a-cylinder>
-
-      <a-cylinder position="-0.13 0.32 0"
-        radius="0.095" height="0.62"
-        color="#333c47">
-      </a-cylinder>
-
-      <a-cylinder position="0.13 0.32 0"
-        radius="0.095" height="0.62"
-        color="#333c47">
-      </a-cylinder>
-    </a-entity>
-
-    <!-- EXISTING GRABBABLE CUBE -->
-    <a-box id="near"
-      position="-0.4 1.2 -0.65"
-      width="0.15" height="0.15" depth="0.15"
-      color="#e9d84b"
-      vision-target pinch-grabbable>
-    </a-box>
-
-  </a-entity>
-
-  <!-- WRIST PANEL -->
-  <a-entity id="wristPanel"
-    visible="false"
-    scale="0.45 0.45 0.45">
-
-    <a-box id="wristBackground"
-      width="0.44" height="0.79"
-      depth="0.018"
-      color="#172c3a"
-      material="opacity:0.96;transparent:true">
-    </a-box>
-
-    <a-text
-      value="VISION CONTROLS"
-      position="0 0.355 0.015"
-      align="center" width="0.42"
-      color="#fff">
-    </a-text>
-
-    <!-- DISTANCE -->
-    <a-text id="vrDistance"
-      value="Distance: 0.5 m"
-      position="0 0.294 0.015"
-      align="center" width="0.40"
-      color="#fff">
-    </a-text>
-
-    <a-box class="touch-control"
-      data-action="distanceDown"
-      position="-0.105 0.240 0.025"
-      width="0.16" height="0.07"
-      depth="0.025" color="#477bba">
-    </a-box>
-
-    <a-text value="- 0.1m"
-      position="-0.105 0.231 0.043"
-      align="center" width="0.33"
-      color="#fff">
-    </a-text>
-
-    <a-box class="touch-control"
-      data-action="distanceUp"
-      position="0.105 0.240 0.025"
-      width="0.16" height="0.07"
-      depth="0.025" color="#477bba">
-    </a-box>
-
-    <a-text value="+ 0.1m"
-      position="0.105 0.231 0.043"
-      align="center" width="0.33"
-      color="#fff">
-    </a-text>
-
-    <!-- FIELD -->
-    <a-text id="vrField"
-      value="Peripheral field: 100%"
-      position="0 0.165 0.015"
-      align="center" width="0.40"
-      color="#fff">
-    </a-text>
-
-    <a-box class="touch-control"
-      data-action="fieldDown"
-      position="-0.105 0.108 0.025"
-      width="0.16" height="0.07"
-      depth="0.025" color="#477bba">
-    </a-box>
-
-    <a-text value="Field -"
-      position="-0.105 0.099 0.043"
-      align="center" width="0.33"
-      color="#fff">
-    </a-text>
-
-    <a-box class="touch-control"
-      data-action="fieldUp"
-      position="0.105 0.108 0.025"
-      width="0.16" height="0.07"
-      depth="0.025" color="#477bba">
-    </a-box>
-
-    <a-text value="Field +"
-      position="0.105 0.099 0.043"
-      align="center" width="0.33"
-      color="#fff">
-    </a-text>
-
-    <!-- GLARE -->
-    <a-box class="touch-control"
-      data-action="glare"
-      position="0 0.010 0.025"
-      width="0.36" height="0.065"
-      depth="0.025" color="#536b78">
-    </a-box>
-
-    <a-text id="vrGlare"
-      value="Glare: OFF"
-      position="0 0.001 0.043"
-      align="center" width="0.39"
-      color="#fff">
-    </a-text>
-
-    <!-- VR MOVEMENT CONTROL -->
-    <a-entity id="wristMotionGroup">
-      <a-box class="touch-control"
-        data-action="motion"
-        position="0 -0.073 0.025"
-        width="0.36" height="0.065"
-        depth="0.025" color="#536b78">
-      </a-box>
-
-      <a-text id="vrMotion"
-        value="Moving person: ON"
-        position="0 -0.082 0.043"
-        align="center" width="0.39"
-        color="#fff">
-      </a-text>
-    </a-entity>
-
-    <!-- LIGHTING PRESETS: VR ONLY -->
-    <a-entity id="wristLightingGroup">
-
-      <a-text value="ROOM LIGHTING"
-        position="0 -0.146 0.015"
-        align="center" width="0.39"
-        color="#fff">
-      </a-text>
-
-      <a-box class="touch-control"
-        data-action="morning"
-        position="-0.105 -0.202 0.025"
-        width="0.16" height="0.065"
-        depth="0.025" color="#a47748">
-      </a-box>
-
-      <a-text value="Morning"
-        position="-0.105 -0.211 0.043"
-        align="center" width="0.32"
-        color="#fff">
-      </a-text>
-
-      <a-box class="touch-control"
-        data-action="day"
-        position="0.105 -0.202 0.025"
-        width="0.16" height="0.065"
-        depth="0.025" color="#467fa9">
-      </a-box>
-
-      <a-text value="Day"
-        position="0.105 -0.211 0.043"
-        align="center" width="0.32"
-        color="#fff">
-      </a-text>
-
-      <a-box class="touch-control"
-        data-action="dusk"
-        position="-0.105 -0.281 0.025"
-        width="0.16" height="0.065"
-        depth="0.025" color="#98647d">
-      </a-box>
-
-      <a-text value="Dusk"
-        position="-0.105 -0.290 0.043"
-        align="center" width="0.32"
-        color="#fff">
-      </a-text>
-
-      <a-box class="touch-control"
-        data-action="night"
-        position="0.105 -0.281 0.025"
-        width="0.16" height="0.065"
-        depth="0.025" color="#34445e">
-      </a-box>
-
-      <a-text value="Night"
-        position="0.105 -0.290 0.043"
-        align="center" width="0.32"
-        color="#fff">
-      </a-text>
-    </a-entity>
-
-    <!-- SIMULATION -->
-    <a-entity id="wristSimulationGroup">
-      <a-box class="touch-control"
-        data-action="simulation"
-        position="0 -0.362 0.025"
-        width="0.36" height="0.065"
-        depth="0.025" color="#a34e4e">
-      </a-box>
-
-      <a-text id="vrSimulation"
-        value="SIMULATION OFF"
-        position="0 -0.371 0.043"
-        align="center" width="0.39"
-        color="#fff">
-      </a-text>
-    </a-entity>
-
-  </a-entity>
-
-  <!-- HAND TRACKING -->
-  <a-entity id="leftHand"
-    hand-tracking-controls="hand:left;modelStyle:mesh">
-  </a-entity>
-
-  <a-entity id="rightHand"
-    hand-tracking-controls="hand:right;modelStyle:mesh">
-  </a-entity>
-
-  <!-- CAMERA AND VISION EFFECTS -->
-  <a-entity id="rig">
-    <a-camera id="cam"
-      position="0 1.6 0"
-      look-controls
-      wasd-controls>
-
-      <a-plane id="fieldOverlay"
-        position="0 0 -0.48"
-        width="2" height="2"
-        peripheral-field>
-      </a-plane>
-
-      <a-entity id="glareOverlay"
-        geometry="primitive:plane;width:0.7;height:0.7"
-        material="shader:flat;color:#fff;transparent:true;opacity:0"
-        position="-0.28 0 -0.5">
-      </a-entity>
-
-      <a-entity id="scotoma1"
-        geometry="primitive:circle;radius:0.13;segments:32"
-        material="shader:flat;color:#111;transparent:true;opacity:0.58"
-        position="-0.13 -0.03 -0.42">
-      </a-entity>
-
-      <a-entity id="scotoma2"
-        geometry="primitive:circle;radius:0.075;segments:32"
-        material="shader:flat;color:#222;transparent:true;opacity:0.48"
-        position="0.18 0.11 -0.43">
-      </a-entity>
-
-    </a-camera>
-  </a-entity>
-
+<a-scene renderer="antialias:true;colorManagement:true;alpha:true"
+background="color:#b8cbd5"
+xr-mode-ui="enabled:false"
+webxr="optionalFeatures:hand-tracking,local-floor,bounded-floor">
+
+<a-entity id="virtualRoom">
+
+<!-- LIGHTS -->
+<a-entity id="ambientLight" light="type:ambient;color:#fff;intensity:0.85"></a-entity>
+<a-entity id="sunLight" position="-2 5 -2" light="type:directional;color:#fff;intensity:1.1;castShadow:false"></a-entity>
+<a-entity id="ceilingLight" position="0 2.7 -1.5" light="type:point;color:#fff1d8;intensity:0;distance:8;decay:2"></a-entity>
+<a-entity id="floorLampLight" position="2.55 1.75 -3.25" light="type:point;color:#ffe0a0;intensity:0;distance:5;decay:2"></a-entity>
+
+<!-- ROOM -->
+<a-plane rotation="-90 0 0" width="8" height="8" color="#927b65"></a-plane>
+<a-entity id="floorboards"></a-entity>
+<a-plane position="0 1.6 -4" width="8" height="3.2" color="#d7d0c5"></a-plane>
+<a-plane position="-4 1.6 0" rotation="0 90 0" width="8" height="3.2" color="#d7d0c5"></a-plane>
+<a-plane position="4 1.6 0" rotation="0 -90 0" width="8" height="3.2" color="#d7d0c5"></a-plane>
+<a-plane position="0 3.2 0" rotation="90 0 0" width="8" height="8" color="#f4f0e8"></a-plane>
+<a-box position="0 0.09 -3.95" width="8" height="0.18" depth="0.045" color="#f4f0e8"></a-box>
+<a-box position="-3.95 0.09 0" width="0.045" height="0.18" depth="8" color="#f4f0e8"></a-box>
+<a-box position="3.95 0.09 0" width="0.045" height="0.18" depth="8" color="#f4f0e8"></a-box>
+
+<!-- WINDOW -->
+<a-entity position="-1.9 1.85 -3.94">
+<a-plane id="windowGlass" width="2.2" height="1.5" color="#8db8d0"></a-plane>
+<a-box width="2.28" height="0.065" depth="0.07" position="0 0 0.035" color="#fff9ee"></a-box>
+<a-box width="0.065" height="1.57" depth="0.07" position="0 0 0.035" color="#fff9ee"></a-box>
+<a-box width="0.08" height="1.6" depth="0.07" position="-1.13 0 0.035" color="#fff9ee"></a-box>
+<a-box width="0.08" height="1.6" depth="0.07" position="1.13 0 0.035" color="#fff9ee"></a-box>
+<a-box width="2.34" height="0.08" depth="0.09" position="0 0.78 0.035" color="#fff9ee"></a-box>
+<a-box width="2.45" height="0.09" depth="0.2" position="0 -0.78 0.08" color="#fff9ee"></a-box>
+<a-box position="-1.27 0 0.13" width="0.26" height="1.75" depth="0.11" color="#a7b0a0"></a-box>
+<a-box position="1.27 0 0.13" width="0.26" height="1.75" depth="0.11" color="#a7b0a0"></a-box>
+<a-cylinder position="0 0.95 0.17" rotation="0 0 90" radius="0.025" height="2.9" color="#484848"></a-cylinder>
+</a-entity>
+
+<!-- RUG -->
+<a-plane position="0 0.012 -1.7" rotation="-90 0 0" width="3.6" height="2.6" color="#a9a79b"></a-plane>
+<a-plane position="0 0.014 -1.7" rotation="-90 0 0" width="3.2" height="2.2" color="#bcb8a8"></a-plane>
+
+<!-- SOFA -->
+<a-entity id="sofa" position="0 0 -3.05">
+<a-box position="0 0.39 0" width="2.35" height="0.45" depth="0.87" color="#66776e"></a-box>
+<a-box position="0 0.83 -0.34" width="2.35" height="0.78" depth="0.25" color="#596b63"></a-box>
+<a-box position="-1.09 0.60 0" width="0.25" height="0.56" depth="0.93" color="#596b63"></a-box>
+<a-box position="1.09 0.60 0" width="0.25" height="0.56" depth="0.93" color="#596b63"></a-box>
+<a-box position="-0.51 0.64 0.12" width="0.98" height="0.13" depth="0.67" color="#73857b"></a-box>
+<a-box position="0.51 0.64 0.12" width="0.98" height="0.13" depth="0.67" color="#73857b"></a-box>
+<a-box position="-0.5 0.97 -0.23" width="0.94" height="0.48" depth="0.16" color="#718278"></a-box>
+<a-box position="0.5 0.97 -0.23" width="0.94" height="0.48" depth="0.16" color="#718278"></a-box>
+<a-box position="-0.76 0.84 0.20" rotation="0 0 15" width="0.38" height="0.38" depth="0.13" color="#c9a36e"></a-box>
+<a-box position="0.78 0.85 0.20" rotation="0 0 -14" width="0.36" height="0.36" depth="0.13" color="#d7c9b1"></a-box>
+<a-box position="0.68 0.73 0.38" rotation="0 0 -8" width="0.65" height="0.055" depth="0.40" color="#bba78f"></a-box>
+</a-entity>
+
+<!-- COFFEE TABLE -->
+<a-entity id="coffeeTable" position="0 0 -1.55">
+<a-box position="0 0.44 0" width="1.55" height="0.10" depth="0.75" color="#77553c"></a-box>
+<a-box position="-0.66 0.22 -0.27" width="0.09" height="0.44" depth="0.09" color="#513b2c"></a-box>
+<a-box position="0.66 0.22 -0.27" width="0.09" height="0.44" depth="0.09" color="#513b2c"></a-box>
+<a-box position="-0.66 0.22 0.27" width="0.09" height="0.44" depth="0.09" color="#513b2c"></a-box>
+<a-box position="0.66 0.22 0.27" width="0.09" height="0.44" depth="0.09" color="#513b2c"></a-box>
+
+<a-entity id="mug" position="0.42 0.64 -0.13" vision-target pinch-grabbable>
+<a-cylinder radius="0.085" height="0.25" color="#e8e2d5"></a-cylinder>
+<a-torus position="0.105 0 0" rotation="0 90 0" radius="0.067" radius-tubular="0.014" color="#e8e2d5"></a-torus>
+</a-entity>
+
+<a-entity id="remote" position="-0.37 0.54 0.13" vision-target pinch-grabbable>
+<a-box width="0.095" height="0.035" depth="0.23" color="#24272b"></a-box>
+<a-cylinder position="0 0.022 -0.07" radius="0.017" height="0.007" color="#c74d4d"></a-cylinder>
+<a-cylinder position="0 0.022 0" radius="0.025" height="0.007" color="#777"></a-cylinder>
+</a-entity>
+
+<a-entity id="book" position="0 0.54 0.05" vision-target pinch-grabbable>
+<a-box width="0.25" height="0.035" depth="0.33" color="#365b70"></a-box>
+<a-box position="0 0.019 0" width="0.22" height="0.005" depth="0.29" color="#e8e0cb"></a-box>
+</a-entity>
+</a-entity>
+
+<!-- TELEVISION -->
+<a-entity position="0 0 1.15">
+<a-box position="0 0.37 0" width="2.1" height="0.65" depth="0.43" color="#65503f"></a-box>
+<a-box position="0 0.71 0" width="2.18" height="0.055" depth="0.48" color="#49372d"></a-box>
+<a-box position="0 1.28 0.03" width="1.72" height="1.0" depth="0.075" color="#15191c"></a-box>
+<a-plane position="0 1.28 -0.012" width="1.61" height="0.89" color="#263a48"></a-plane>
+<a-box position="0 0.83 0.02" width="0.10" height="0.18" depth="0.10" color="#222"></a-box>
+</a-entity>
+
+<!-- SIDE TABLE -->
+<a-entity position="2.05 0 -2.65">
+<a-cylinder position="0 0.53 0" radius="0.32" height="0.07" color="#795a41"></a-cylinder>
+<a-cylinder position="0 0.27 0" radius="0.055" height="0.52" color="#5a4535"></a-cylinder>
+<a-cylinder position="0 0.04 0" radius="0.23" height="0.08" color="#5a4535"></a-cylinder>
+</a-entity>
+
+<!-- FLOOR LAMP AND SWITCH -->
+<a-entity id="lamp" position="2.55 0 -3.25">
+<a-cylinder position="0 0.045 0" radius="0.21" height="0.09" color="#353a3e"></a-cylinder>
+<a-cylinder position="0 0.85 0" radius="0.025" height="1.65" color="#353a3e"></a-cylinder>
+<a-cone id="lampShade" position="0 1.76 0" radius-bottom="0.31" radius-top="0.17" height="0.43" color="#d9c9ad"></a-cone>
+<a-box id="floorSwitch" class="physical-switch" data-action="floor" position="0.18 1.53 0.12" width="0.15" height="0.11" depth="0.10" color="#b44e4e"></a-box>
+<a-text id="floorSwitchText" value="OFF" position="0.18 1.515 0.18" align="center" width="0.28" color="#fff"></a-text>
+</a-entity>
+
+<!-- BOOKSHELF -->
+<a-entity position="3.35 0 -1.4" rotation="0 -90 0">
+<a-box position="-0.6 1.0 0" width="0.10" height="2" depth="0.43" color="#74543e"></a-box>
+<a-box position="0.6 1.0 0" width="0.10" height="2" depth="0.43" color="#74543e"></a-box>
+<a-box position="0 0.13 0" width="1.3" height="0.07" depth="0.43" color="#74543e"></a-box>
+<a-box position="0 0.75 0" width="1.3" height="0.07" depth="0.43" color="#74543e"></a-box>
+<a-box position="0 1.37 0" width="1.3" height="0.07" depth="0.43" color="#74543e"></a-box>
+<a-box position="0 1.96 0" width="1.3" height="0.07" depth="0.43" color="#74543e"></a-box>
+<a-entity id="shelfBooks"></a-entity>
+</a-entity>
+
+<!-- PLANT -->
+<a-entity position="-2.9 0 -2.9">
+<a-cylinder position="0 0.22 0" radius-bottom="0.22" radius-top="0.29" height="0.44" color="#b17a58"></a-cylinder>
+<a-cylinder position="0 0.78 0" radius="0.025" height="0.9" color="#506b39"></a-cylinder>
+<a-sphere position="-0.22 1.0 0" scale="0.36 0.18 0.20" color="#547c49"></a-sphere>
+<a-sphere position="0.24 1.12 0" scale="0.36 0.18 0.20" color="#416c40"></a-sphere>
+<a-sphere position="0 1.36 0" scale="0.25 0.35 0.22" color="#64884d"></a-sphere>
+</a-entity>
+
+<!-- WALL ART -->
+<a-entity position="1.85 2.15 -3.92">
+<a-box width="1.05" height="0.72" depth="0.045" color="#5e4a3c"></a-box>
+<a-plane position="0 0 0.03" width="0.94" height="0.61" color="#c2c8b5"></a-plane>
+<a-circle position="-0.20 0.13 0.035" radius="0.15" color="#d7ad7b"></a-circle>
+<a-triangle vertex-a="-0.44 -0.27 0.04" vertex-b="0.12 0.19 0.04" vertex-c="0.42 -0.27 0.04" color="#758b79"></a-triangle>
+</a-entity>
+
+<!-- MOVING PERSON -->
+<a-entity id="person" position="2 0 -0.4" vision-target>
+<a-sphere position="0 1.65 0" radius="0.19" color="#987c68"></a-sphere>
+<a-cylinder position="0 1.02 0" radius="0.26" height="1.05" color="#405b72"></a-cylinder>
+<a-cylinder position="-0.13 0.32 0" radius="0.095" height="0.62" color="#333c47"></a-cylinder>
+<a-cylinder position="0.13 0.32 0" radius="0.095" height="0.62" color="#333c47"></a-cylinder>
+</a-entity>
+
+<a-box id="near" position="-0.4 1.2 -0.65" width="0.15" height="0.15" depth="0.15" color="#e9d84b" vision-target pinch-grabbable></a-box>
+
+<!-- OVERHEAD LIGHT AND WALL SWITCH -->
+<a-cylinder position="0 3.08 -1.5" radius="0.27" height="0.12" color="#e5dcc6"></a-cylinder>
+<a-entity position="-3.90 1.25 -1.5" rotation="0 90 0">
+<a-box width="0.22" height="0.27" depth="0.045" color="#f1eee8"></a-box>
+<a-box id="ceilingSwitch" class="physical-switch" data-action="ceiling" position="0 0 0.05" width="0.11" height="0.15" depth="0.045" color="#b44e4e"></a-box>
+<a-text id="ceilingSwitchText" value="OFF" position="0 -0.105 0.082" align="center" width="0.22" color="#222"></a-text>
+</a-entity>
+
+</a-entity>
+
+<!-- WRIST PANEL -->
+<a-entity id="wristPanel" visible="false" scale="0.45 0.45 0.45">
+<a-box id="wristBackground" width="0.48" height="0.63" depth="0.018" color="#172c3a" material="opacity:0.96;transparent:true"></a-box>
+<a-text id="wristTitle" value="VISION" position="0 0.265 0.016" align="center" width="0.44" color="#fff"></a-text>
+<a-entity id="wristTabs"></a-entity>
+<a-entity id="wristContent"></a-entity>
+</a-entity>
+
+<a-entity id="leftHand" hand-tracking-controls="hand:left;modelStyle:mesh"></a-entity>
+<a-entity id="rightHand" hand-tracking-controls="hand:right;modelStyle:mesh"></a-entity>
+
+<!-- CAMERA AND VISION OVERLAYS -->
+<a-entity id="rig">
+<a-camera id="cam" position="0 1.6 0" look-controls wasd-controls>
+<a-plane id="fieldOverlay" position="0 0 -0.48" width="2" height="2" peripheral-field></a-plane>
+<a-entity id="glareOverlay" geometry="primitive:plane;width:0.7;height:0.7" material="shader:flat;color:#fff;transparent:true;opacity:0" position="-0.28 0 -0.5"></a-entity>
+<a-entity id="scotoma1" geometry="primitive:circle;radius:0.13;segments:32" material="shader:flat;color:#111;transparent:true;opacity:0.58" position="-0.13 -0.03 -0.42"></a-entity>
+<a-entity id="scotoma2" geometry="primitive:circle;radius:0.075;segments:32" material="shader:flat;color:#222;transparent:true;opacity:0.48" position="0.18 0.11 -0.43"></a-entity>
+</a-camera>
+</a-entity>
 </a-scene>
 
 <script>
-const $ = selector => document.querySelector(selector);
-const scene = $('a-scene');
+const $=s=>document.querySelector(s);
+const scene=$('a-scene');
 
-let simOn = true;
-let useful = 0.5;
-let fieldPercent = 100;
-let lightingMode = 'day';
+let simOn=true;
+let useful=0.5;
+let fieldPercent=100;
+let lightingMode='afternoon';
+let floorOn=false;
+let ceilingOn=false;
+let currentPage='vision';
 
-/* PROCEDURAL ROOM DETAILS */
-
-function addBox(parent, position, size, color) {
-  const el = document.createElement('a-box');
-
-  el.setAttribute('position',position.join(' '));
-  el.setAttribute('width',size[0]);
-  el.setAttribute('height',size[1]);
-  el.setAttribute('depth',size[2]);
-  el.setAttribute('color',color);
-
-  parent.appendChild(el);
-  return el;
+const presets={
+morning:{
+ambient:.48,ambientColor:'#ffe2c0',
+sun:1.25,sunColor:'#ffbb79',
+sunPosition:'-3 2 -1',
+window:'#edb875',background:'#e5b993'
+},
+afternoon:{
+ambient:.85,ambientColor:'#ffffff',
+sun:1.1,sunColor:'#ffffff',
+sunPosition:'-2 5 -2',
+window:'#8db8d0',background:'#b8cbd5'
+},
+dusk:{
+ambient:.24,ambientColor:'#b7b5d4',
+sun:.42,sunColor:'#ff9865',
+sunPosition:'-3 1 -1',
+window:'#aa7590',background:'#806f90'
+},
+night:{
+ambient:.10,ambientColor:'#9aaccd',
+sun:.03,sunColor:'#a4b8de',
+sunPosition:'-2 4 -2',
+window:'#17243c',background:'#111a2b'
 }
-
-function buildRoomDetails() {
-  const floor = $('#floorboards');
-
-  for (let x=-3.8;x<4;x+=0.4) {
-    addBox(
-      floor,
-      [x,0.008,0],
-      [0.008,0.004,8],
-      '#75614f'
-    );
-  }
-
-  const shelf = $('#shelfBooks');
-  const colors = [
-    '#8a594c','#486a76','#b1a078',
-    '#586b52','#7d6481','#b57a53'
-  ];
-
-  for (let row=0;row<3;row++) {
-    for (let i=0;i<9;i++) {
-      const height=0.22+(i%3)*0.045;
-
-      addBox(
-        shelf,
-        [-0.48+i*0.115,
-          0.19+row*0.62+height/2,
-          0],
-        [0.085,height,0.29],
-        colors[(i+row)%colors.length]
-      );
-    }
-  }
-}
-
-/* LIGHTING PRESETS */
-
-const lightingPresets = {
-  morning:{
-    ambient:0.48,
-    ambientColor:'#ffe2c0',
-    sun:1.25,
-    sunColor:'#ffbb79',
-    sunPosition:'-3 2 -1',
-    ceiling:0,
-    lamp:0,
-    window:'#edb875',
-    background:'#e5b993',
-    shade:'#ddc39c'
-  },
-
-  day:{
-    ambient:0.85,
-    ambientColor:'#ffffff',
-    sun:1.1,
-    sunColor:'#ffffff',
-    sunPosition:'-2 5 -2',
-    ceiling:0,
-    lamp:0,
-    window:'#8db8d0',
-    background:'#b8cbd5',
-    shade:'#d9c9ad'
-  },
-
-  dusk:{
-    ambient:0.24,
-    ambientColor:'#b7b5d4',
-    sun:0.42,
-    sunColor:'#ff9865',
-    sunPosition:'-3 1 -1',
-    ceiling:0,
-    lamp:0.25,
-    window:'#aa7590',
-    background:'#806f90',
-    shade:'#e1b984'
-  },
-
-  night:{
-    ambient:0.10,
-    ambientColor:'#9aaccd',
-    sun:0.03,
-    sunColor:'#a4b8de',
-    sunPosition:'-2 4 -2',
-    ceiling:0.28,
-    lamp:1.15,
-    window:'#17243c',
-    background:'#111a2b',
-    shade:'#ffe0a0'
-  }
 };
 
-function setLighting(mode) {
-  if (!lightingPresets[mode]) return;
+function addBox(parent,pos,size,color){
+const e=document.createElement('a-box');
+e.setAttribute('position',pos.join(' '));
+e.setAttribute('width',size[0]);
+e.setAttribute('height',size[1]);
+e.setAttribute('depth',size[2]);
+e.setAttribute('color',color);
+parent.appendChild(e);
+}
 
-  lightingMode=mode;
-  const p=lightingPresets[mode];
+function buildRoom(){
+for(let x=-3.8;x<4;x+=.4){
+addBox($('#floorboards'),[x,.008,0],[.008,.004,8],'#75614f');
+}
+const colors=['#8a594c','#486a76','#b1a078','#586b52','#7d6481','#b57a53'];
+for(let row=0;row<3;row++){
+for(let i=0;i<9;i++){
+const h=.22+(i%3)*.045;
+addBox($('#shelfBooks'),
+[-.48+i*.115,.19+row*.62+h/2,0],
+[.085,h,.29],
+colors[(i+row)%colors.length]);
+}
+}
+}
 
-  $('#ambientLight').setAttribute(
-    'light',{
-      type:'ambient',
-      color:p.ambientColor,
-      intensity:p.ambient
-    }
-  );
+function setLighting(mode){
+if(!presets[mode])return;
+lightingMode=mode;
+const p=presets[mode];
 
-  $('#sunLight').setAttribute(
-    'light',{
-      type:'directional',
-      color:p.sunColor,
-      intensity:p.sun,
-      castShadow:false
-    }
-  );
+$('#ambientLight').setAttribute('light',{
+type:'ambient',
+color:p.ambientColor,
+intensity:p.ambient
+});
 
-  $('#sunLight').setAttribute(
-    'position',p.sunPosition
-  );
+$('#sunLight').setAttribute('light',{
+type:'directional',
+color:p.sunColor,
+intensity:p.sun,
+castShadow:false
+});
 
-  $('#ceilingLight').setAttribute(
-    'light','intensity',p.ceiling
-  );
+$('#sunLight').setAttribute('position',p.sunPosition);
+$('#windowGlass').setAttribute('color',p.window);
 
-  $('#floorLampLight').setAttribute(
-    'light','intensity',p.lamp
-  );
+if(!scene.is('ar-mode')){
+scene.setAttribute('background','color',p.background);
+}
 
-  $('#windowGlass').setAttribute(
-    'color',p.window
-  );
+$('#lightingStatus').textContent=
+'Lighting: '+mode[0].toUpperCase()+mode.slice(1);
 
-  $('#lampShade').setAttribute(
-    'color',p.shade
-  );
+syncLighting();
+renderWrist();
+}
 
-  if (!scene.is('ar-mode')) {
-    scene.setAttribute(
-      'background','color',p.background
-    );
-  }
+function syncLighting(){
+// Artificial lighting remains independent of time of day.
+$('#floorLampLight').setAttribute('light','intensity',floorOn?1.8:0);
+$('#ceilingLight').setAttribute('light','intensity',ceilingOn?1.6:0);
+$('#lampShade').setAttribute('color',floorOn?'#fff0bf':'#d9c9ad');
+$('#floorSwitch').setAttribute('color',floorOn?'#3b9864':'#b44e4e');
+$('#ceilingSwitch').setAttribute('color',ceilingOn?'#3b9864':'#b44e4e');
+$('#floorSwitchText').setAttribute('value',floorOn?'ON':'OFF');
+$('#ceilingSwitchText').setAttribute('value',ceilingOn?'ON':'OFF');
+$('#browserFloor').textContent='Floor lamp: '+(floorOn?'ON':'OFF');
+$('#browserCeiling').textContent='Overhead: '+(ceilingOn?'ON':'OFF');
+}
 
-  $('#lightingStatus').textContent =
-    'Lighting: '+mode.charAt(0).toUpperCase()+
-    mode.slice(1);
+function syncSettings(){
+$('#field').value=fieldPercent;
+$('#fieldVal').textContent=fieldPercent+'%';
+$('#dist').value=useful.toFixed(1);
+$('#distVal').textContent=useful.toFixed(1)+' m';
+$('#toggle').textContent=simOn?'Simulation OFF':'Simulation ON';
+$('#status').textContent=simOn?'SIMULATION ON':'SIMULATION OFF';
+$('#scotoma1').setAttribute('visible',simOn);
+$('#scotoma2').setAttribute('visible',simOn);
+$('#glareOverlay').setAttribute(
+'material','opacity',
+simOn&&$('#glare').checked?.62:0
+);
+renderWrist();
+}
+
+function makeButton(parent,action,label,x,y,w=.19,h=.067){
+const b=document.createElement('a-box');
+b.classList.add('touch-control');
+b.dataset.action=action;
+b.setAttribute('position',`${x} ${y} 0.025`);
+b.setAttribute('width',w);
+b.setAttribute('height',h);
+b.setAttribute('depth',.025);
+b.setAttribute('color','#477bba');
+parent.appendChild(b);
+
+const t=document.createElement('a-text');
+t.setAttribute('value',label);
+t.setAttribute('position',`${x} ${y-.010} 0.043`);
+t.setAttribute('align','center');
+t.setAttribute('width',w*2.2);
+t.setAttribute('color','#fff');
+parent.appendChild(t);
+return b;
+}
+
+function makeLabel(parent,label,y){
+const t=document.createElement('a-text');
+t.setAttribute('value',label);
+t.setAttribute('position',`0 ${y} 0.018`);
+t.setAttribute('align','center');
+t.setAttribute('width',.43);
+t.setAttribute('color','#fff');
+parent.appendChild(t);
+}
+
+function renderWrist(){
+const tabs=$('#wristTabs');
+const content=$('#wristContent');
+tabs.replaceChildren();
+content.replaceChildren();
+
+const ar=scene.is('ar-mode');
+if(ar&&currentPage!=='vision')currentPage='vision';
+
+$('#wristTitle').setAttribute('value',currentPage.toUpperCase());
+
+const pages=ar?['vision']:['vision','lighting','environment'];
+
+pages.forEach((p,i)=>{
+const x=pages.length===1?0:-.145+i*.145;
+const b=makeButton(
+tabs,
+'page:'+p,
+p==='environment'?'Room':p==='lighting'?'Light':'Vision',
+x,.198,
+pages.length===1?.28:.132,
+.062
+);
+b.setAttribute('color',p===currentPage?'#3b9864':'#3e617a');
+});
+
+if(currentPage==='vision'){
+makeLabel(content,'Distance: '+useful.toFixed(1)+' m',.116);
+makeButton(content,'distanceDown','- 0.1m',-.108,.063);
+makeButton(content,'distanceUp','+ 0.1m',.108,.063);
+makeLabel(content,'Peripheral field: '+fieldPercent+'%',-.012);
+makeButton(content,'fieldDown','Field -',-.108,-.064);
+makeButton(content,'fieldUp','Field +',.108,-.064);
+makeButton(content,'glare','Glare: '+($('#glare').checked?'ON':'OFF'),0,-.151,.41);
+makeButton(content,'simulation',simOn?'SIMULATION OFF':'SIMULATION ON',0,-.244,.41);
+}
+else if(currentPage==='lighting'){
+makeLabel(content,'Time: '+lightingMode,.12);
+makeButton(content,'morning','Morning',-.108,.061);
+makeButton(content,'afternoon','Afternoon',.108,.061);
+makeButton(content,'dusk','Dusk',-.108,-.018);
+makeButton(content,'night','Night',.108,-.018);
+makeButton(content,'floor','Floor lamp: '+(floorOn?'ON':'OFF'),0,-.121,.41);
+makeButton(content,'ceiling','Overhead: '+(ceilingOn?'ON':'OFF'),0,-.220,.41);
+}
+else{
+makeLabel(content,'Room interactions',.11);
+makeButton(content,'motion','Moving person: '+($('#motion').checked?'ON':'OFF'),0,.022,.41);
+makeLabel(content,'More controls coming later',-.11);
+}
+}
+
+function applyAction(action){
+if(action.startsWith('page:')){
+currentPage=action.slice(5);
+renderWrist();
+return;
+}
+
+if(action==='distanceDown')
+useful=Math.max(.3,Math.round((useful-.1)*10)/10);
+
+if(action==='distanceUp')
+useful=Math.min(2,Math.round((useful+.1)*10)/10);
+
+if(action==='fieldDown')
+fieldPercent=Math.max(20,fieldPercent-5);
+
+if(action==='fieldUp')
+fieldPercent=Math.min(100,fieldPercent+5);
+
+if(action==='glare')
+$('#glare').checked=!$('#glare').checked;
+
+if(action==='motion')
+$('#motion').checked=!$('#motion').checked;
+
+if(action==='simulation')
+simOn=!simOn;
+
+if(action==='floor')
+floorOn=!floorOn;
+
+if(action==='ceiling')
+ceilingOn=!ceilingOn;
+
+if(presets[action]&&!scene.is('ar-mode')){
+setLighting(action);
+}
+
+syncLighting();
+syncSettings();
 }
 
 /* DISTANCE EFFECT */
-
 AFRAME.registerComponent('vision-target',{
-  init:function() {
-    this.cameraPosition=new THREE.Vector3();
-    this.objectPosition=new THREE.Vector3();
-    this.originalMaterials=new Map();
+init(){
+this.cameraPosition=new THREE.Vector3();
+this.objectPosition=new THREE.Vector3();
+this.originalMaterials=new Map();
+},
+tick(){
+if(!scene.is('vr-mode')||scene.is('ar-mode'))return;
 
-    this.el.object3D.traverse(o=>{
-      if (!o.material) return;
+$('#cam').object3D.getWorldPosition(this.cameraPosition);
+this.el.object3D.getWorldPosition(this.objectPosition);
 
-      const materials=Array.isArray(o.material)
-        ?o.material:[o.material];
+const d=this.cameraPosition.distanceTo(this.objectPosition);
+const f=simOn?
+Math.max(.12,1-Math.max(0,d-useful)/2.5):1;
 
-      for (const m of materials) {
-        if (!this.originalMaterials.has(m)) {
-          this.originalMaterials.set(m,{
-            opacity:m.opacity,
-            transparent:m.transparent
-          });
-        }
-      }
-    });
-  },
-
-  tick:function() {
-    $('#cam').object3D.getWorldPosition(
-      this.cameraPosition
-    );
-
-    this.el.object3D.getWorldPosition(
-      this.objectPosition
-    );
-
-    const distance=this.cameraPosition.distanceTo(
-      this.objectPosition
-    );
-
-    const excess=Math.max(0,distance-useful);
-    const factor=simOn
-      ?Math.max(0.12,1-excess/2.5)
-      :1;
-
-    this.el.object3D.traverse(o=>{
-      if (!o.material) return;
-
-      const materials=Array.isArray(o.material)
-        ?o.material:[o.material];
-
-      for (const m of materials) {
-        if (!this.originalMaterials.has(m)) {
-          this.originalMaterials.set(m,{
-            opacity:m.opacity,
-            transparent:m.transparent
-          });
-        }
-
-        const original=this.originalMaterials.get(m);
-        m.transparent=true;
-        m.opacity=original.opacity*factor;
-      }
-    });
-  }
+this.el.object3D.traverse(o=>{
+if(!o.material)return;
+for(const m of(Array.isArray(o.material)?o.material:[o.material])){
+if(!this.originalMaterials.has(m)){
+this.originalMaterials.set(m,m.opacity);
+}
+m.transparent=true;
+m.opacity=this.originalMaterials.get(m)*f;
+}
+});
+}
 });
 
 /* PERIPHERAL FIELD */
-
 AFRAME.registerComponent('peripheral-field',{
-  init:function() {
-    this.material=new THREE.ShaderMaterial({
-      transparent:true,
-      depthTest:false,
-      depthWrite:false,
-      uniforms:{
-        radius:{value:1.5}
-      },
-
-      vertexShader:`
-        varying vec2 vUv;
-
-        void main() {
-          vUv=uv;
-          gl_Position=
-            projectionMatrix*
-            modelViewMatrix*
-            vec4(position,1.0);
-        }
-      `,
-
-      fragmentShader:`
-        uniform float radius;
-        varying vec2 vUv;
-
-        void main() {
-          vec2 p=(vUv-vec2(0.5))*2.0;
-          float r=length(p);
-
-          float opacity=
-            smoothstep(
-              radius-0.10,
-              radius+0.12,
-              r
-            )*0.96;
-
-          gl_FragColor=
-            vec4(0.0,0.0,0.0,opacity);
-        }
-      `
-    });
-
-    const install=()=>{
-      const mesh=this.el.getObject3D('mesh');
-      if (!mesh) return;
-
-      mesh.material=this.material;
-      mesh.renderOrder=999;
-      mesh.frustumCulled=false;
-    };
-
-    this.el.addEventListener('object3dset',install);
-    install();
-  },
-
-  tick:function() {
-    this.material.uniforms.radius.value=
-      !simOn || fieldPercent===100
-      ?1.5
-      :0.12+0.95*(fieldPercent-20)/80;
-  },
-
-  remove:function() {
-    this.material.dispose();
-  }
+init(){
+this.material=new THREE.ShaderMaterial({
+transparent:true,
+depthTest:false,
+depthWrite:false,
+uniforms:{radius:{value:1.5}},
+vertexShader:`
+varying vec2 vUv;
+void main(){
+vUv=uv;
+gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);
+}`,
+fragmentShader:`
+uniform float radius;
+varying vec2 vUv;
+void main(){
+vec2 p=(vUv-vec2(0.5))*2.0;
+float r=length(p);
+float opacity=smoothstep(radius-0.10,radius+0.12,r)*0.96;
+gl_FragColor=vec4(0.0,0.0,0.0,opacity);
+}`
 });
 
-/* SETTINGS */
-
-function syncSettings() {
-  $('#field').value=fieldPercent;
-  $('#fieldVal').textContent=fieldPercent+'%';
-
-  $('#vrField').setAttribute(
-    'value',
-    'Peripheral field: '+fieldPercent+'%'
-  );
-
-  $('#dist').value=useful.toFixed(1);
-  $('#distVal').textContent=useful.toFixed(1)+' m';
-
-  $('#vrDistance').setAttribute(
-    'value',
-    'Distance: '+useful.toFixed(1)+' m'
-  );
-
-  $('#vrGlare').setAttribute(
-    'value',
-    'Glare: '+(
-      $('#glare').checked?'ON':'OFF'
-    )
-  );
-
-  $('#vrMotion').setAttribute(
-    'value',
-    'Moving person: '+(
-      $('#motion').checked?'ON':'OFF'
-    )
-  );
-
-  $('#vrSimulation').setAttribute(
-    'value',
-    simOn?'SIMULATION OFF':'SIMULATION ON'
-  );
-
-  $('#toggle').textContent=
-    simOn?'Simulation OFF':'Simulation ON';
-
-  $('#status').textContent=
-    simOn?'SIMULATION ON':'SIMULATION OFF';
-
-  $('#scotoma1').setAttribute('visible',simOn);
-  $('#scotoma2').setAttribute('visible',simOn);
-
-  $('#glareOverlay').setAttribute(
-    'material','opacity',
-    simOn && $('#glare').checked?0.62:0
-  );
+const install=()=>{
+const mesh=this.el.getObject3D('mesh');
+if(mesh){
+mesh.material=this.material;
+mesh.renderOrder=999;
+mesh.frustumCulled=false;
 }
-
-function applyAction(action) {
-  if (action==='distanceDown')
-    useful=Math.max(
-      0.3,Math.round((useful-0.1)*10)/10
-    );
-
-  if (action==='distanceUp')
-    useful=Math.min(
-      2,Math.round((useful+0.1)*10)/10
-    );
-
-  if (action==='fieldDown')
-    fieldPercent=Math.max(20,fieldPercent-5);
-
-  if (action==='fieldUp')
-    fieldPercent=Math.min(100,fieldPercent+5);
-
-  if (action==='glare')
-    $('#glare').checked=!$('#glare').checked;
-
-  if (action==='motion')
-    $('#motion').checked=!$('#motion').checked;
-
-  if (action==='simulation')
-    simOn=!simOn;
-
-  if (lightingPresets[action] &&
-      !scene.is('ar-mode')) {
-    setLighting(action);
-  }
-
-  syncSettings();
+};
+this.el.addEventListener('object3dset',install);
+install();
+},
+tick(){
+this.material.uniforms.radius.value=
+!simOn||fieldPercent===100?
+1.5:.12+.95*(fieldPercent-20)/80;
+},
+remove(){
+this.material.dispose();
 }
+});
 
-/* WRIST TRACKING WITH 2 SECOND GRACE PERIOD */
-
+/* WRIST TRACKING */
 AFRAME.registerComponent('wrist-follow',{
-  init:function() {
-    this.wrist=new THREE.Vector3();
-    this.cameraRotation=new THREE.Quaternion();
-    this.offset=new THREE.Vector3();
-    this.lastTracked=0;
-    this.hasTracked=false;
-  },
+init(){
+this.wrist=new THREE.Vector3();
+this.rotation=new THREE.Quaternion();
+this.offset=new THREE.Vector3();
+this.lastTracked=0;
+this.hasTracked=false;
+},
+tick(time){
+const panel=$('#wristPanel');
 
-  tick:function(time) {
-    const panel=$('#wristPanel');
+if(!scene.is('vr-mode')&&!scene.is('ar-mode')){
+panel.object3D.visible=false;
+this.hasTracked=false;
+return;
+}
 
-    if (!scene.is('vr-mode') &&
-        !scene.is('ar-mode')) {
-      panel.object3D.visible=false;
-      this.hasTracked=false;
-      return;
-    }
+const xr=scene.renderer?.xr;
+const hand=xr?.getHand(0);
+const wrist=hand?.joints?.wrist;
 
-    const xr=scene.renderer?.xr;
-    if (!xr) return;
-
-    const hand=xr.getHand(0);
-    const wrist=hand?.joints?.['wrist'];
-
-    if (wrist?.visible) {
-      wrist.getWorldPosition(this.wrist);
-
-      $('#cam').object3D.getWorldQuaternion(
-        this.cameraRotation
-      );
-
-      this.offset.set(0,0.19,0.06);
-      this.offset.applyQuaternion(
-        this.cameraRotation
-      );
-
-      panel.object3D.position.copy(this.wrist)
-        .add(this.offset);
-
-      panel.object3D.quaternion.copy(
-        this.cameraRotation
-      );
-
-      panel.object3D.visible=true;
-      this.lastTracked=time;
-      this.hasTracked=true;
-
-    } else {
-      const elapsed=time-this.lastTracked;
-
-      panel.object3D.visible=
-        this.hasTracked && elapsed<2000;
-    }
-  }
+if(wrist?.visible){
+wrist.getWorldPosition(this.wrist);
+$('#cam').object3D.getWorldQuaternion(this.rotation);
+this.offset.set(0,.19,.06).applyQuaternion(this.rotation);
+panel.object3D.position.copy(this.wrist).add(this.offset);
+panel.object3D.quaternion.copy(this.rotation);
+panel.object3D.visible=true;
+this.lastTracked=time;
+this.hasTracked=true;
+}
+else{
+panel.object3D.visible=
+this.hasTracked&&time-this.lastTracked<2000;
+}
+}
 });
 
-/* WRIST FINGERTIP INTERACTION */
-
+/* FINGER TOUCH: WRIST AND PHYSICAL SWITCHES */
 AFRAME.registerComponent('finger-button-touch',{
-  init:function() {
-    this.tip=new THREE.Vector3();
-    this.local=new THREE.Vector3();
-    this.buttonPosition=new THREE.Vector3();
-    this.lastContact='';
-    this.controls=[
-      ...document.querySelectorAll('.touch-control')
-    ];
-  },
+init(){
+this.tip=new THREE.Vector3();
+this.local=new THREE.Vector3();
+this.center=new THREE.Vector3();
+this.lastContact='';
+},
+tick(){
+if(!scene.is('vr-mode')&&!scene.is('ar-mode'))return;
 
-  tick:function() {
-    if (!scene.is('vr-mode') &&
-        !scene.is('ar-mode')) return;
+const tip=scene.renderer?.xr?.getHand(1)?.joints?.['index-finger-tip'];
+if(!tip?.visible){
+this.lastContact='';
+return;
+}
 
-    const xr=scene.renderer?.xr;
-    if (!xr) return;
+tip.getWorldPosition(this.tip);
+let touched='';
+const panel=$('#wristPanel');
 
-    const right=xr.getHand(1);
-    const tip=right?.joints?.['index-finger-tip'];
-    const panel=$('#wristPanel');
+if(panel.object3D.visible){
+const po=panel.object3D;
+po.updateWorldMatrix(true,false);
+this.local.copy(this.tip);
+po.worldToLocal(this.local);
 
-    if (!tip?.visible ||
-        !panel.object3D.visible) {
-      this.lastContact='';
-      return;
-    }
+if(this.local.z>.005&&this.local.z<.14){
+for(const el of document.querySelectorAll('#wristPanel .touch-control')){
+el.object3D.getWorldPosition(this.center);
+po.worldToLocal(this.center);
+const g=el.getAttribute('geometry');
 
-    tip.getWorldPosition(this.tip);
+if(
+Math.abs(this.local.x-this.center.x)<g.width/2&&
+Math.abs(this.local.y-this.center.y)<g.height/2
+){
+touched=el.dataset.action;
+break;
+}
+}
+}
+}
 
-    const panelObject=panel.object3D;
-    panelObject.updateWorldMatrix(true,false);
+if(!touched&&scene.is('vr-mode')&&!scene.is('ar-mode')){
+for(const el of document.querySelectorAll('.physical-switch')){
+el.object3D.getWorldPosition(this.center);
+if(this.tip.distanceTo(this.center)<.105){
+touched=el.dataset.action;
+break;
+}
+}
+}
 
-    this.local.copy(this.tip);
-    panelObject.worldToLocal(this.local);
-
-    let touched='';
-
-    // Coordinates are converted into panel-local space,
-    // accounting for the 45% wrist-panel scale.
-    if (this.local.z>0.005 &&
-        this.local.z<0.14) {
-
-      for (const el of this.controls) {
-        // Skip controls inside hidden VR-only groups.
-        let parent=el.parentElement;
-        let hidden=false;
-
-        while (parent && parent!==panel) {
-          if (parent.object3D &&
-              !parent.object3D.visible) {
-            hidden=true;
-            break;
-          }
-          parent=parent.parentElement;
-        }
-
-        if (hidden) continue;
-
-        el.object3D.getWorldPosition(
-          this.buttonPosition
-        );
-
-        panelObject.worldToLocal(
-          this.buttonPosition
-        );
-
-        const g=el.getAttribute('geometry');
-
-        if (
-          Math.abs(this.local.x-
-            this.buttonPosition.x)<g.width/2 &&
-          Math.abs(this.local.y-
-            this.buttonPosition.y)<g.height/2
-        ) {
-          touched=el.dataset.action;
-          break;
-        }
-      }
-    }
-
-    if (touched && touched!==this.lastContact) {
-      applyAction(touched);
-    }
-
-    this.lastContact=touched;
-  }
+if(touched&&touched!==this.lastContact){
+applyAction(touched);
+}
+this.lastContact=touched;
+}
 });
 
-/* GRABBABLE OBJECTS */
-
+/* GRABBING */
 AFRAME.registerComponent('pinch-grabbable',{});
 
 AFRAME.registerComponent('pinch-grab-manager',{
-  init:function() {
-    this.objects=[
-      ...document.querySelectorAll(
-        '[pinch-grabbable]'
-      )
-    ];
+init(){
+this.objects=[...document.querySelectorAll('[pinch-grabbable]')];
+this.holds={left:null,right:null};
+this.wasPinching={left:false,right:false};
+this.tip=new THREE.Vector3();
+this.thumb=new THREE.Vector3();
+this.center=new THREE.Vector3();
+this.world=new THREE.Vector3();
+this.local=new THREE.Vector3();
+},
+release(key){
+const hold=this.holds[key];
+if(!hold)return;
+if(hold.el.id==='near'){
+hold.el.setAttribute('color','#e9d84b');
+}
+this.holds[key]=null;
+},
+tick(){
+if(!scene.is('vr-mode')||scene.is('ar-mode')){
+this.release('left');
+this.release('right');
+this.wasPinching.left=false;
+this.wasPinching.right=false;
+return;
+}
 
-    this.holds={left:null,right:null};
-    this.wasPinching={left:false,right:false};
+const xr=scene.renderer?.xr;
+if(!xr)return;
 
-    this.tip=new THREE.Vector3();
-    this.thumb=new THREE.Vector3();
-    this.center=new THREE.Vector3();
-    this.world=new THREE.Vector3();
-    this.local=new THREE.Vector3();
-  },
+for(let i=0;i<2;i++){
+const key=i===0?'left':'right';
+const hand=xr.getHand(i);
+const index=hand?.joints?.['index-finger-tip'];
+const thumb=hand?.joints?.['thumb-tip'];
 
-  release:function(key) {
-    const hold=this.holds[key];
-    if (!hold) return;
+if(!index?.visible||!thumb?.visible){
+this.release(key);
+this.wasPinching[key]=false;
+continue;
+}
 
-    if (hold.el.id==='near')
-      hold.el.setAttribute('color','#e9d84b');
+index.getWorldPosition(this.tip);
+thumb.getWorldPosition(this.thumb);
+this.center.copy(this.tip).add(this.thumb).multiplyScalar(.5);
 
-    this.holds[key]=null;
-  },
+const separation=this.tip.distanceTo(this.thumb);
+const pinching=separation<.035;
+const released=separation>.055;
+const hold=this.holds[key];
 
-  tick:function() {
-    if (!scene.is('vr-mode') ||
-        scene.is('ar-mode')) {
-      this.release('left');
-      this.release('right');
-      this.wasPinching.left=false;
-      this.wasPinching.right=false;
-      return;
-    }
+if(hold){
+if(released){
+this.release(key);
+this.wasPinching[key]=false;
+continue;
+}
 
-    const xr=scene.renderer?.xr;
-    if (!xr) return;
+this.world.copy(this.center).add(hold.offset);
+this.local.copy(this.world);
+hold.el.object3D.parent.worldToLocal(this.local);
+hold.el.object3D.position.copy(this.local);
+}
+else if(pinching&&!this.wasPinching[key]){
+let nearest=null;
+let nearestDistance=.18;
 
-    for (let i=0;i<2;i++) {
-      const key=i===0?'left':'right';
-      const hand=xr.getHand(i);
+for(const el of this.objects){
+if(this.holds.left?.el===el||this.holds.right?.el===el){
+continue;
+}
+el.object3D.getWorldPosition(this.world);
+const d=this.center.distanceTo(this.world);
+if(d<nearestDistance){
+nearest=el;
+nearestDistance=d;
+}
+}
 
-      const index=
-        hand?.joints?.['index-finger-tip'];
+if(nearest){
+nearest.object3D.getWorldPosition(this.world);
+this.holds[key]={
+el:nearest,
+offset:this.world.clone().sub(this.center)
+};
+if(nearest.id==='near'){
+nearest.setAttribute('color','#fff176');
+}
+}
+}
 
-      const thumb=
-        hand?.joints?.['thumb-tip'];
-
-      if (!index?.visible ||
-          !thumb?.visible) {
-        this.release(key);
-        this.wasPinching[key]=false;
-        continue;
-      }
-
-      index.getWorldPosition(this.tip);
-      thumb.getWorldPosition(this.thumb);
-
-      this.center.copy(this.tip)
-        .add(this.thumb)
-        .multiplyScalar(0.5);
-
-      const separation=
-        this.tip.distanceTo(this.thumb);
-
-      const pinching=separation<0.035;
-      const released=separation>0.055;
-
-      const hold=this.holds[key];
-
-      if (hold) {
-        if (released) {
-          this.release(key);
-          this.wasPinching[key]=false;
-          continue;
-        }
-
-        this.world.copy(this.center)
-          .add(hold.offset);
-
-        this.local.copy(this.world);
-
-        hold.el.object3D.parent
-          .worldToLocal(this.local);
-
-        hold.el.object3D.position.copy(
-          this.local
-        );
-
-      } else if (
-        pinching &&
-        !this.wasPinching[key]
-      ) {
-        let nearest=null;
-        let nearestDistance=0.18;
-
-        for (const el of this.objects) {
-          if (
-            this.holds.left?.el===el ||
-            this.holds.right?.el===el
-          ) continue;
-
-          el.object3D.getWorldPosition(
-            this.world
-          );
-
-          const distance=
-            this.center.distanceTo(this.world);
-
-          if (distance<nearestDistance) {
-            nearest=el;
-            nearestDistance=distance;
-          }
-        }
-
-        if (nearest) {
-          nearest.object3D.getWorldPosition(
-            this.world
-          );
-
-          this.holds[key]={
-            el:nearest,
-            offset:this.world.clone()
-              .sub(this.center)
-          };
-
-          if (nearest.id==='near')
-            nearest.setAttribute(
-              'color','#fff176'
-            );
-        }
-      }
-
-      this.wasPinching[key]=pinching;
-    }
-  }
+this.wasPinching[key]=pinching;
+}
+}
 });
 
 /* MOVING PERSON */
-
 AFRAME.registerComponent('moving-person',{
-  tick:function(time) {
-    if (!$('#motion').checked) return;
-
-    $('#person').object3D.position.x=
-      2+Math.sin(time/1600)*0.55;
-  }
+tick(time){
+if($('#motion').checked){
+$('#person').object3D.position.x=
+2+Math.sin(time/1600)*.55;
+}
+}
 });
 
 /* MODE HANDLING */
+function setEnvironmentMode(){
+const ar=scene.is('ar-mode');
+const vr=scene.is('vr-mode');
 
-function setEnvironmentMode() {
-  const ar=scene.is('ar-mode');
-  const vr=scene.is('vr-mode');
+$('#virtualRoom').object3D.visible=!ar;
+$('#modeStatus').textContent=
+ar?'Mixed Reality':vr?'Virtual Reality':'Browser preview';
 
-  $('#virtualRoom').object3D.visible=!ar;
-
-  $('#modeStatus').textContent=
-    ar?'Mixed Reality':
-    vr?'Virtual Reality':'Browser preview';
-
-  $('#wristMotionGroup').object3D.visible=!ar;
-  $('#wristLightingGroup').object3D.visible=!ar;
-
-  const simulation=$('#wristSimulationGroup');
-
-  if (ar) {
-    // Move simulation toggle up into the space
-    // previously occupied by VR-only controls.
-    simulation.object3D.position.y=0.29;
-
-    $('#wristBackground').setAttribute(
-      'height',0.52
-    );
-
-    $('#wristBackground').object3D.position.y=
-      0.135;
-
-    scene.removeAttribute('background');
-
-  } else {
-    simulation.object3D.position.y=0;
-
-    $('#wristBackground').setAttribute(
-      'height',0.79
-    );
-
-    $('#wristBackground').object3D.position.y=0;
-
-    setLighting(lightingMode);
-  }
-
-  if (!ar && !vr) {
-    $('#wristPanel').object3D.visible=false;
-  }
+if(ar){
+currentPage='vision';
+scene.removeAttribute('background');
+}
+else{
+setLighting(lightingMode);
 }
 
-/* XR ENTRY */
+renderWrist();
 
-async function enterMode(mode) {
-  try {
-    if (!navigator.xr) {
-      alert('WebXR is unavailable.');
-      return;
-    }
-
-    const sessionType=
-      mode==='ar'?'immersive-ar':'immersive-vr';
-
-    const supported=
-      await navigator.xr.isSessionSupported(
-        sessionType
-      );
-
-    if (!supported) {
-      alert(mode.toUpperCase()+
-        ' is unavailable on this browser.');
-      return;
-    }
-
-    scene.enterVR(mode==='ar');
-
-  } catch(error) {
-    console.error(error);
-    alert('Unable to enter '+mode.toUpperCase());
-  }
+if(!ar&&!vr){
+$('#wristPanel').object3D.visible=false;
+}
 }
 
-$('#enterVR').addEventListener(
-  'click',()=>enterMode('vr')
-);
+async function enterMode(mode){
+try{
+if(!navigator.xr){
+alert('WebXR unavailable');
+return;
+}
 
-$('#enterAR').addEventListener(
-  'click',()=>enterMode('ar')
-);
+const type=mode==='ar'?'immersive-ar':'immersive-vr';
 
-scene.addEventListener(
-  'enter-vr',setEnvironmentMode
-);
+if(!await navigator.xr.isSessionSupported(type)){
+alert(mode.toUpperCase()+' unavailable');
+return;
+}
 
-scene.addEventListener(
-  'exit-vr',setEnvironmentMode
-);
+scene.enterVR(mode==='ar');
+}
+catch(e){
+console.error(e);
+alert('Unable to enter '+mode.toUpperCase());
+}
+}
 
-scene.addEventListener(
-  'enter-ar',setEnvironmentMode
-);
+$('#enterVR').addEventListener('click',()=>enterMode('vr'));
+$('#enterAR').addEventListener('click',()=>enterMode('ar'));
 
-scene.addEventListener(
-  'exit-ar',setEnvironmentMode
-);
-
-scene.addEventListener(
-  'loaded',setEnvironmentMode
-);
+for(const name of ['enter-vr','exit-vr','enter-ar','exit-ar','loaded']){
+scene.addEventListener(name,setEnvironmentMode);
+}
 
 /* BROWSER CONTROLS */
-
 $('#field').addEventListener('input',e=>{
-  fieldPercent=Number(e.target.value);
-  syncSettings();
+fieldPercent=+e.target.value;
+syncSettings();
 });
 
 $('#dist').addEventListener('input',e=>{
-  useful=Number(e.target.value);
-  syncSettings();
+useful=+e.target.value;
+syncSettings();
 });
 
-$('#glare').addEventListener(
-  'change',syncSettings
-);
+$('#glare').addEventListener('change',syncSettings);
+$('#motion').addEventListener('change',syncSettings);
+$('#toggle').addEventListener('click',()=>applyAction('simulation'));
+$('#browserFloor').addEventListener('click',()=>applyAction('floor'));
+$('#browserCeiling').addEventListener('click',()=>applyAction('ceiling'));
 
-$('#motion').addEventListener(
-  'change',syncSettings
-);
+document.querySelectorAll('[data-light]').forEach(b=>{
+b.addEventListener('click',()=>applyAction(b.dataset.light));
+});
 
-$('#toggle').addEventListener(
-  'click',()=>applyAction('simulation')
-);
-
-document.querySelectorAll(
-  '[data-light]'
-).forEach(button=>{
-  button.addEventListener('click',()=>{
-    setLighting(button.dataset.light);
-  });
+document.querySelectorAll('[data-page]').forEach(b=>{
+b.addEventListener('click',()=>{
+currentPage=b.dataset.page;
+document.querySelectorAll('.browserPage').forEach(p=>{
+p.classList.toggle('active',p.id==='browser-'+currentPage);
+});
+});
 });
 
 /* INITIALIZATION */
-
-buildRoomDetails();
-
+buildRoom();
 scene.setAttribute('wrist-follow','');
 scene.setAttribute('finger-button-touch','');
 scene.setAttribute('pinch-grab-manager','');
 scene.setAttribute('moving-person','');
-
 syncSettings();
-setLighting('day');
-
+setLighting('afternoon');
 </script>
 </body>
 </html>
