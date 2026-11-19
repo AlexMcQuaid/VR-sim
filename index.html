@@ -4,26 +4,65 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Functional Vision Simulator v7.2</title>
+<title>Functional Vision Simulator v7.3</title>
 <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 <style>
-  body {margin:0;background:#111;color:white;font-family:system-ui,sans-serif}
+  body {
+    margin:0;
+    background:#111;
+    color:white;
+    font-family:system-ui,sans-serif;
+  }
   #panel {
-    position:fixed;top:12px;left:12px;z-index:20;
-    background:#111e;border-radius:12px;padding:14px;
-    max-width:370px
+    position:fixed;
+    top:12px;
+    left:12px;
+    z-index:20;
+    background:#111e;
+    border-radius:12px;
+    padding:14px;
+    max-width:370px;
   }
   label {display:block;margin:9px 0}
   button,input {font:inherit}
-  button {padding:9px;border:0;border-radius:7px}
-  .small {font-size:0.85rem;color:#ddd;margin-top:8px}
+  button {
+    padding:9px;
+    border:0;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .small {
+    font-size:0.85rem;
+    color:#ddd;
+    margin-top:8px;
+  }
+  .mode-buttons {
+    display:flex;
+    gap:8px;
+    margin:12px 0;
+  }
+  .mode-buttons button {
+    flex:1;
+    background:#376a9a;
+    color:white;
+    font-weight:600;
+  }
+  .mode-buttons button:disabled {
+    opacity:0.45;
+    cursor:not-allowed;
+  }
 </style>
 </head>
 <body>
 
 <div id="panel">
-  <strong>Functional Vision Simulator v7.2</strong>
+  <strong>Functional Vision Simulator v7.3</strong>
   <div class="small">VR / Mixed Reality wrist controls</div>
+
+  <div class="mode-buttons">
+    <button id="enterVR" type="button">Enter VR</button>
+    <button id="enterAR" type="button">Enter AR</button>
+  </div>
 
   <label>
     Useful viewing distance:
@@ -48,22 +87,22 @@
     Moving person
   </label>
 
-  <button id="toggle">Show normal vision</button>
+  <button id="toggle">Simulation OFF</button>
 
   <div id="status">SIMULATION ON</div>
   <div id="modeStatus" class="small">Browser preview</div>
   <div id="handStatus" class="small">Waiting for XR</div>
 
   <div class="small">
-    In VR or MR, raise your left wrist.
-    Use your right index finger to touch the wrist controls.
+    Raise your left wrist to access vision controls.
+    Use your right index finger to touch the buttons.
   </div>
 </div>
 
 <a-scene
   renderer="antialias:true; colorManagement:true; alpha:true"
   background="color:#d9d4ca"
-  xr-mode-ui="enabled:true; XRMode: ar"
+  xr-mode-ui="enabled:false"
   webxr="optionalFeatures: hand-tracking, local-floor, bounded-floor">
 
   <!-- VIRTUAL ROOM: VR ONLY -->
@@ -72,13 +111,18 @@
     <a-entity light="type:directional;intensity:0.7"
       position="-2 4 2"></a-entity>
 
-    <a-plane rotation="-90 0 0" width="8" height="8"
-      color="#9b8d78"></a-plane>
-    <a-plane position="0 2 -4" width="8" height="4"
-      color="#ded8cd"></a-plane>
-    <a-plane position="-4 2 0" rotation="0 90 0"
+    <a-plane rotation="-90 0 0"
+      width="8" height="8" color="#9b8d78"></a-plane>
+
+    <a-plane position="0 2 -4"
+      width="8" height="4" color="#ded8cd"></a-plane>
+
+    <a-plane position="-4 2 0"
+      rotation="0 90 0"
       width="8" height="4" color="#d4cec3"></a-plane>
-    <a-plane position="4 2 0" rotation="0 -90 0"
+
+    <a-plane position="4 2 0"
+      rotation="0 -90 0"
       width="8" height="4" color="#d4cec3"></a-plane>
 
     <a-plane position="-2.6 2.2 -3.96"
@@ -111,7 +155,8 @@
       color="#111" vision-target>
     </a-box>
 
-    <a-entity id="person" position="2 0 -3"
+    <a-entity id="person"
+      position="2 0 -3"
       vision-target>
       <a-sphere position="0 1.65 0"
         radius="0.2" color="#8b6f61"></a-sphere>
@@ -176,8 +221,12 @@
   </a-entity>
 
   <!-- WRIST PANEL: VR AND AR -->
-  <a-entity id="wristPanel" visible="false" scale="0.45 0.45 0.45">
-    <a-box width="0.44" height="0.60"
+  <a-entity id="wristPanel"
+    visible="false"
+    scale="0.45 0.45 0.45">
+
+    <a-box id="wristBackground"
+      width="0.44" height="0.60"
       depth="0.018" color="#172c3a"
       material="opacity:0.96;transparent:true">
     </a-box>
@@ -198,6 +247,7 @@
       position="-0.105 0.139 0.025"
       width="0.16" height="0.07" depth="0.025"
       color="#477bba"></a-box>
+
     <a-text value="- 0.1m"
       position="-0.105 0.130 0.042"
       align="center" width="0.33"
@@ -208,6 +258,7 @@
       position="0.105 0.139 0.025"
       width="0.16" height="0.07" depth="0.025"
       color="#477bba"></a-box>
+
     <a-text value="+ 0.1m"
       position="0.105 0.130 0.042"
       align="center" width="0.33"
@@ -224,6 +275,7 @@
       position="-0.105 0.010 0.025"
       width="0.16" height="0.07" depth="0.025"
       color="#477bba"></a-box>
+
     <a-text value="Field -"
       position="-0.105 0.001 0.042"
       align="center" width="0.33"
@@ -234,6 +286,7 @@
       position="0.105 0.010 0.025"
       width="0.16" height="0.07" depth="0.025"
       color="#477bba"></a-box>
+
     <a-text value="Field +"
       position="0.105 0.001 0.042"
       align="center" width="0.33"
@@ -244,39 +297,49 @@
       position="0 -0.080 0.025"
       width="0.36" height="0.065" depth="0.025"
       color="#536b78"></a-box>
+
     <a-text id="vrGlare"
       value="Glare: OFF"
       position="0 -0.089 0.042"
       align="center" width="0.39"
       color="#fff"></a-text>
 
-    <a-box class="touch-control"
-      data-action="motion"
-      position="0 -0.161 0.025"
-      width="0.36" height="0.065" depth="0.025"
-      color="#536b78"></a-box>
-    <a-text id="vrMotion"
-      value="Moving person: ON"
-      position="0 -0.170 0.042"
-      align="center" width="0.39"
-      color="#fff"></a-text>
+    <!-- MOVING PERSON: VR ONLY -->
+    <a-entity id="wristMotionGroup">
+      <a-box class="touch-control"
+        data-action="motion"
+        position="0 -0.161 0.025"
+        width="0.36" height="0.065" depth="0.025"
+        color="#536b78"></a-box>
 
-    <a-box class="touch-control"
-      data-action="simulation"
-      position="0 -0.244 0.025"
-      width="0.36" height="0.065" depth="0.025"
-      color="#a34e4e"></a-box>
-    <a-text id="vrSimulation"
-      value="NORMAL VISION"
-      position="0 -0.253 0.042"
-      align="center" width="0.39"
-      color="#fff"></a-text>
+      <a-text id="vrMotion"
+        value="Moving person: ON"
+        position="0 -0.170 0.042"
+        align="center" width="0.39"
+        color="#fff"></a-text>
+    </a-entity>
+
+    <!-- SIMULATION TOGGLE -->
+    <a-entity id="wristSimulationGroup">
+      <a-box class="touch-control"
+        data-action="simulation"
+        position="0 -0.244 0.025"
+        width="0.36" height="0.065" depth="0.025"
+        color="#a34e4e"></a-box>
+
+      <a-text id="vrSimulation"
+        value="SIMULATION OFF"
+        position="0 -0.253 0.042"
+        align="center" width="0.39"
+        color="#fff"></a-text>
+    </a-entity>
   </a-entity>
 
   <!-- HAND TRACKING -->
   <a-entity id="leftHand"
     hand-tracking-controls="hand:left;modelStyle:mesh">
   </a-entity>
+
   <a-entity id="rightHand"
     hand-tracking-controls="hand:right;modelStyle:mesh">
   </a-entity>
@@ -322,7 +385,7 @@ let simOn = true;
 let useful = 0.5;
 let fieldPercent = 100;
 
-/* ORIGINAL DISTANCE SIMULATION */
+/* DISTANCE SIMULATION */
 AFRAME.registerComponent('vision-target', {
   tick: function() {
     const cam = $('#cam').object3D;
@@ -350,11 +413,11 @@ AFRAME.registerComponent('vision-target', {
 AFRAME.registerComponent('peripheral-field', {
   init: function() {
     this.material = new THREE.ShaderMaterial({
-      transparent: true,
-      depthTest: false,
-      depthWrite: false,
-      uniforms: {radius:{value:1.5}},
-      vertexShader: `
+      transparent:true,
+      depthTest:false,
+      depthWrite:false,
+      uniforms:{radius:{value:1.5}},
+      vertexShader:`
         varying vec2 vUv;
         void main() {
           vUv=uv;
@@ -362,7 +425,7 @@ AFRAME.registerComponent('peripheral-field', {
             modelViewMatrix*vec4(position,1.0);
         }
       `,
-      fragmentShader: `
+      fragmentShader:`
         uniform float radius;
         varying vec2 vUv;
         void main() {
@@ -383,14 +446,14 @@ AFRAME.registerComponent('peripheral-field', {
       mesh.frustumCulled = false;
     };
 
-    this.el.addEventListener('object3dset', install);
+    this.el.addEventListener('object3dset',install);
     install();
   },
   tick: function() {
     this.material.uniforms.radius.value =
       !simOn || fieldPercent === 100
       ? 1.5
-      : 0.12 + 0.95 * (fieldPercent-20)/80;
+      : 0.12 + 0.95*(fieldPercent-20)/80;
   },
   remove: function() {
     this.material.dispose();
@@ -400,225 +463,219 @@ AFRAME.registerComponent('peripheral-field', {
 /* SETTINGS */
 function syncSettings() {
   $('#field').value = fieldPercent;
-  $('#fieldVal').textContent = fieldPercent + '%';
+  $('#fieldVal').textContent = fieldPercent+'%';
+
   $('#vrField').setAttribute(
-    'value', 'Peripheral field: ' + fieldPercent + '%'
+    'value','Peripheral field: '+fieldPercent+'%'
   );
 
   $('#dist').value = useful.toFixed(1);
-  $('#distVal').textContent = useful.toFixed(1) + ' m';
+  $('#distVal').textContent = useful.toFixed(1)+' m';
+
   $('#vrDistance').setAttribute(
-    'value', 'Distance: ' + useful.toFixed(1) + ' m'
+    'value','Distance: '+useful.toFixed(1)+' m'
   );
 
   $('#vrGlare').setAttribute(
-    'value', 'Glare: ' +
-    ($('#glare').checked ? 'ON' : 'OFF')
+    'value','Glare: '+(
+      $('#glare').checked ? 'ON' : 'OFF'
+    )
   );
 
   $('#vrMotion').setAttribute(
-    'value', 'Moving person: ' +
-    ($('#motion').checked ? 'ON' : 'OFF')
+    'value','Moving person: '+(
+      $('#motion').checked ? 'ON' : 'OFF'
+    )
   );
 
   $('#vrSimulation').setAttribute(
-    'value', simOn ? 'NORMAL VISION' : 'RESTORE SIMULATION'
+    'value',
+    simOn ? 'SIMULATION OFF' : 'SIMULATION ON'
   );
 
   $('#toggle').textContent =
-    simOn ? 'Show normal vision' : 'Show simulation';
+    simOn ? 'Simulation OFF' : 'Simulation ON';
 
   $('#status').textContent =
-    simOn ? 'SIMULATION ON' : 'NORMAL COMPARISON';
+    simOn ? 'SIMULATION ON' : 'SIMULATION OFF';
 
-  $('#scotoma1').setAttribute('visible', simOn);
-  $('#scotoma2').setAttribute('visible', simOn);
+  $('#scotoma1').setAttribute('visible',simOn);
+  $('#scotoma2').setAttribute('visible',simOn);
 
   $('#glareOverlay').setAttribute(
-    'material', 'opacity',
+    'material','opacity',
     simOn && $('#glare').checked ? 0.62 : 0
   );
 }
 
 function applyAction(action) {
-  if (action === 'distanceDown')
-    useful = Math.max(0.3, Math.round((useful-0.1)*10)/10);
+  if (action==='distanceDown')
+    useful=Math.max(0.3,Math.round((useful-0.1)*10)/10);
 
-  if (action === 'distanceUp')
-    useful = Math.min(2, Math.round((useful+0.1)*10)/10);
+  if (action==='distanceUp')
+    useful=Math.min(2,Math.round((useful+0.1)*10)/10);
 
-  if (action === 'fieldDown')
-    fieldPercent = Math.max(20, fieldPercent-5);
+  if (action==='fieldDown')
+    fieldPercent=Math.max(20,fieldPercent-5);
 
-  if (action === 'fieldUp')
-    fieldPercent = Math.min(100, fieldPercent+5);
+  if (action==='fieldUp')
+    fieldPercent=Math.min(100,fieldPercent+5);
 
-  if (action === 'glare')
-    $('#glare').checked = !$('#glare').checked;
+  if (action==='glare')
+    $('#glare').checked=!$('#glare').checked;
 
-  if (action === 'motion')
-    $('#motion').checked = !$('#motion').checked;
+  if (action==='motion')
+    $('#motion').checked=!$('#motion').checked;
 
-  if (action === 'simulation')
-    simOn = !simOn;
+  if (action==='simulation')
+    simOn=!simOn;
 
   syncSettings();
 }
 
-/* WRIST POSITION TRACKING
-   Follows the left wrist and faces the headset.
-   Uses actual XR joint positions, not the visible mesh.
-*/
+/* WRIST POSITION TRACKING */
 AFRAME.registerComponent('wrist-follow', {
-  init: function() {
-    this.wrist = new THREE.Vector3();
-    this.cameraPosition = new THREE.Vector3();
-    this.cameraRotation = new THREE.Quaternion();
-    this.offset = new THREE.Vector3();
+  init:function() {
+    this.wrist=new THREE.Vector3();
+    this.cameraPosition=new THREE.Vector3();
+    this.cameraRotation=new THREE.Quaternion();
+    this.offset=new THREE.Vector3();
   },
 
-  tick: function() {
-    const panel = $('#wristPanel');
+  tick:function() {
+    const panel=$('#wristPanel');
 
     if (!scene.is('vr-mode') && !scene.is('ar-mode')) {
-      panel.object3D.visible = false;
+      panel.object3D.visible=false;
       return;
     }
 
-    const xr = scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer && scene.renderer.xr;
     if (!xr) return;
 
-    const hand = xr.getHand(0);
-    const wrist = hand && hand.joints && hand.joints['wrist'];
+    const hand=xr.getHand(0);
+    const wrist=hand && hand.joints && hand.joints['wrist'];
 
     if (!wrist || !wrist.visible) {
-      panel.object3D.visible = false;
+      panel.object3D.visible=false;
       return;
     }
 
     wrist.getWorldPosition(this.wrist);
 
-    const camera = $('#cam').object3D;
+    const camera=$('#cam').object3D;
     camera.getWorldPosition(this.cameraPosition);
     camera.getWorldQuaternion(this.cameraRotation);
 
-    // Move the panel above the wrist and slightly
-    // toward the headset for fingertip accessibility.
-    this.offset.set(0, 0.19, 0.06);
+    this.offset.set(0,0.19,0.06);
     this.offset.applyQuaternion(this.cameraRotation);
 
     panel.object3D.position.copy(this.wrist).add(this.offset);
     panel.object3D.quaternion.copy(this.cameraRotation);
-    panel.object3D.visible = true;
+    panel.object3D.visible=true;
   }
 });
 
-/* FINGERTIP BUTTON DETECTION
-   Only the right index finger operates wrist controls.
-*/
+/* FINGERTIP BUTTON DETECTION */
 AFRAME.registerComponent('finger-button-touch', {
-  init: function() {
-    this.tip = new THREE.Vector3();
-    this.local = new THREE.Vector3();
-    this.lastContact = '';
-    this.lastSound = '';
-    this.lastStatus = '';
+  init:function() {
+    this.tip=new THREE.Vector3();
+    this.local=new THREE.Vector3();
+    this.lastContact='';
 
-    document.querySelectorAll('.touch-control').forEach(el => {
-      el.addEventListener('click', () =>
-        applyAction(el.dataset.action)
-      );
+    document.querySelectorAll('.touch-control').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if (!el.closest('[visible="false"]'))
+          applyAction(el.dataset.action);
+      });
     });
   },
 
-  tick: function() {
+  tick:function() {
     if (!scene.is('vr-mode') && !scene.is('ar-mode'))
       return;
 
-    const xr = scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer && scene.renderer.xr;
     if (!xr) return;
 
-    const right = xr.getHand(1);
-    const tip = right && right.joints &&
+    const right=xr.getHand(1);
+    const tip=right && right.joints &&
       right.joints['index-finger-tip'];
 
-    const panel = $('#wristPanel');
+    const panel=$('#wristPanel');
 
     if (!tip || !tip.visible || !panel.object3D.visible) {
-      this.lastContact = '';
+      this.lastContact='';
       return;
     }
 
     tip.getWorldPosition(this.tip);
 
-    const panelObject = panel.object3D;
-    panelObject.updateWorldMatrix(true, false);
+    const panelObject=panel.object3D;
+    panelObject.updateWorldMatrix(true,false);
 
     this.local.copy(this.tip);
     panelObject.worldToLocal(this.local);
 
-    let touched = '';
+    let touched='';
 
-    // Only accept touches near the front of the panel.
-    if (this.local.z > 0.005 && this.local.z < 0.10) {
-      const controls = [
+    if (this.local.z>0.005 && this.local.z<0.10) {
+      const controls=[
         ...document.querySelectorAll('.touch-control')
       ];
 
-      for (let i=0; i<controls.length; i++) {
-        const el = controls[i];
-        const p = el.object3D.position;
-        const g = el.getAttribute('geometry');
+      for (const el of controls) {
+        if (!el.object3D.visible ||
+            !el.parentElement.object3D.visible)
+          continue;
+
+        const p=new THREE.Vector3();
+        el.object3D.getWorldPosition(p);
+        panelObject.worldToLocal(p);
+
+        const g=el.getAttribute('geometry');
 
         if (
-          Math.abs(this.local.x-p.x) < g.width/2 &&
-          Math.abs(this.local.y-p.y) < g.height/2
+          Math.abs(this.local.x-p.x)<g.width/2 &&
+          Math.abs(this.local.y-p.y)<g.height/2
         ) {
-          touched = el.dataset.action;
+          touched=el.dataset.action;
           break;
         }
       }
     }
 
-    if (touched && touched !== this.lastContact) {
+    if (touched && touched!==this.lastContact)
       applyAction(touched);
-    }
 
-    this.lastContact = touched;
-
-    const message = 'Right hand tracked; wrist controls active';
-
-    if (message !== this.lastStatus) {
-      $('#handStatus').textContent = message;
-      this.lastStatus = message;
-    }
+    this.lastContact=touched;
   }
 });
 
-/* ORIGINAL SOUND BUTTONS */
-const frequencies = [
+/* SOUND BUTTONS */
+const frequencies=[
   261.63,293.66,329.63,349.23,392,440
 ];
 
-let audioContext = null;
+let audioContext=null;
 
 function playTone(index) {
   try {
-    const AudioCtx =
-      window.AudioContext || window.webkitAudioContext;
+    const AudioCtx=
+      window.AudioContext||window.webkitAudioContext;
 
     if (!AudioCtx) return;
-    if (!audioContext) audioContext = new AudioCtx();
+    if (!audioContext) audioContext=new AudioCtx();
 
-    if (audioContext.state === 'suspended')
-      audioContext.resume().catch(() => {});
+    if (audioContext.state==='suspended')
+      audioContext.resume().catch(()=>{});
 
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    const now = audioContext.currentTime;
+    const oscillator=audioContext.createOscillator();
+    const gain=audioContext.createGain();
+    const now=audioContext.currentTime;
 
-    oscillator.type = 'sine';
-    oscillator.frequency.value = frequencies[index];
+    oscillator.type='sine';
+    oscillator.frequency.value=frequencies[index];
 
     gain.gain.setValueAtTime(0.0001,now);
     gain.gain.exponentialRampToValueAtTime(0.14,now+0.018);
@@ -635,16 +692,16 @@ function playTone(index) {
 }
 
 AFRAME.registerComponent('sound-key', {
-  schema: {index:{type:'int'}},
-  init: function() {
-    this.baseColor = this.el.getAttribute('color');
-    this.cooldown = 0;
-    this.el.addEventListener('click', () => this.activate());
+  schema:{index:{type:'int'}},
+  init:function() {
+    this.baseColor=this.el.getAttribute('color');
+    this.cooldown=0;
+    this.el.addEventListener('click',()=>this.activate());
   },
-  activate: function() {
-    if (performance.now() < this.cooldown) return;
+  activate:function() {
+    if (performance.now()<this.cooldown) return;
 
-    this.cooldown = performance.now()+300;
+    this.cooldown=performance.now()+300;
     playTone(this.data.index);
     this.el.setAttribute('color','#fff');
 
@@ -652,37 +709,38 @@ AFRAME.registerComponent('sound-key', {
       'value','Button '+(this.data.index+1)
     );
 
-    setTimeout(() =>
+    setTimeout(()=>
       this.el.setAttribute('color',this.baseColor),180
     );
   }
 });
 
-/* SOUND BUTTON TOUCH: VR ONLY */
+/* SOUND TOUCH: VR ONLY */
 AFRAME.registerComponent('sound-touch', {
-  init: function() {
-    this.tip = new THREE.Vector3();
-    this.local = new THREE.Vector3();
-    this.contact = {left:'',right:''};
+  init:function() {
+    this.tip=new THREE.Vector3();
+    this.local=new THREE.Vector3();
+    this.contact={left:'',right:''};
   },
-  tick: function() {
+
+  tick:function() {
     if (!scene.is('vr-mode') || scene.is('ar-mode'))
       return;
 
-    const xr = scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer && scene.renderer.xr;
     if (!xr) return;
 
-    const station = $('#buttonStation').object3D;
+    const station=$('#buttonStation').object3D;
     station.updateWorldMatrix(true,false);
 
-    for (let i=0; i<2; i++) {
-      const key = i===0 ? 'left' : 'right';
-      const hand = xr.getHand(i);
-      const joint = hand && hand.joints &&
+    for (let i=0;i<2;i++) {
+      const key=i===0?'left':'right';
+      const hand=xr.getHand(i);
+      const joint=hand && hand.joints &&
         hand.joints['index-finger-tip'];
 
       if (!joint || !joint.visible) {
-        this.contact[key] = '';
+        this.contact[key]='';
         continue;
       }
 
@@ -690,87 +748,85 @@ AFRAME.registerComponent('sound-touch', {
       this.local.copy(this.tip);
       station.worldToLocal(this.local);
 
-      let touched = '';
+      let touched='';
 
-      if (this.local.z > 0.012 && this.local.z < 0.125) {
-        const buttons = [
+      if (this.local.z>0.012 && this.local.z<0.125) {
+        const buttons=[
           ...document.querySelectorAll('.sound-button')
         ];
 
-        for (let j=0; j<buttons.length; j++) {
-          const p = buttons[j].object3D.position;
-          const g = buttons[j].getAttribute('geometry');
+        for (let j=0;j<buttons.length;j++) {
+          const p=buttons[j].object3D.position;
+          const g=buttons[j].getAttribute('geometry');
 
           if (
-            Math.abs(this.local.x-p.x) < g.width/2 &&
-            Math.abs(this.local.y-p.y) < g.height/2
+            Math.abs(this.local.x-p.x)<g.width/2 &&
+            Math.abs(this.local.y-p.y)<g.height/2
           ) {
-            touched = String(j);
-            if (touched !== this.contact[key])
+            touched=String(j);
+            if (touched!==this.contact[key])
               buttons[j].components['sound-key'].activate();
             break;
           }
         }
       }
 
-      this.contact[key] = touched;
+      this.contact[key]=touched;
     }
   }
 });
 
 /* PINCH-TO-GRAB: VR ONLY */
-AFRAME.registerComponent('pinch-grabbable', {});
+AFRAME.registerComponent('pinch-grabbable',{});
 
 AFRAME.registerComponent('pinch-grab-manager', {
-  init: function() {
-    this.objects = [
+  init:function() {
+    this.objects=[
       ...document.querySelectorAll('[pinch-grabbable]')
     ];
-
-    this.holds = {left:null,right:null};
-    this.wasPinching = {left:false,right:false};
-
-    this.tip = new THREE.Vector3();
-    this.thumb = new THREE.Vector3();
-    this.center = new THREE.Vector3();
-    this.world = new THREE.Vector3();
-    this.local = new THREE.Vector3();
+    this.holds={left:null,right:null};
+    this.wasPinching={left:false,right:false};
+    this.tip=new THREE.Vector3();
+    this.thumb=new THREE.Vector3();
+    this.center=new THREE.Vector3();
+    this.world=new THREE.Vector3();
+    this.local=new THREE.Vector3();
   },
 
-  release: function(key) {
-    const hold = this.holds[key];
+  release:function(key) {
+    const hold=this.holds[key];
     if (!hold) return;
 
-    if (hold.el.id === 'near')
+    if (hold.el.id==='near')
       hold.el.setAttribute('color','#e9d84b');
 
-    this.holds[key] = null;
+    this.holds[key]=null;
   },
 
-  tick: function() {
+  tick:function() {
     if (!scene.is('vr-mode') || scene.is('ar-mode')) {
       this.release('left');
       this.release('right');
-      this.wasPinching.left = false;
-      this.wasPinching.right = false;
+      this.wasPinching.left=false;
+      this.wasPinching.right=false;
       return;
     }
 
-    const xr = scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer && scene.renderer.xr;
     if (!xr) return;
 
-    for (let i=0; i<2; i++) {
-      const key = i===0 ? 'left' : 'right';
-      const hand = xr.getHand(i);
-      const index = hand && hand.joints &&
+    for (let i=0;i<2;i++) {
+      const key=i===0?'left':'right';
+      const hand=xr.getHand(i);
+      const index=hand && hand.joints &&
         hand.joints['index-finger-tip'];
-      const thumb = hand && hand.joints &&
+      const thumb=hand && hand.joints &&
         hand.joints['thumb-tip'];
 
       if (!index || !thumb ||
           !index.visible || !thumb.visible) {
         this.release(key);
-        this.wasPinching[key] = false;
+        this.wasPinching[key]=false;
         continue;
       }
 
@@ -780,16 +836,16 @@ AFRAME.registerComponent('pinch-grab-manager', {
       this.center.copy(this.tip)
         .add(this.thumb).multiplyScalar(0.5);
 
-      const separation = this.tip.distanceTo(this.thumb);
-      const pinching = separation < 0.035;
-      const released = separation > 0.055;
+      const separation=this.tip.distanceTo(this.thumb);
+      const pinching=separation<0.035;
+      const released=separation>0.055;
 
-      const hold = this.holds[key];
+      const hold=this.holds[key];
 
       if (hold) {
         if (released) {
           this.release(key);
-          this.wasPinching[key] = false;
+          this.wasPinching[key]=false;
           continue;
         }
 
@@ -800,70 +856,127 @@ AFRAME.registerComponent('pinch-grab-manager', {
         hold.el.object3D.position.copy(this.local);
 
       } else if (pinching && !this.wasPinching[key]) {
-        let nearest = null;
-        let nearestDistance = 0.18;
+        let nearest=null;
+        let nearestDistance=0.18;
 
         for (const el of this.objects) {
           if (
-            this.holds.left?.el === el ||
-            this.holds.right?.el === el
+            this.holds.left?.el===el ||
+            this.holds.right?.el===el
           ) continue;
 
           el.object3D.getWorldPosition(this.world);
-          const d = this.center.distanceTo(this.world);
+          const d=this.center.distanceTo(this.world);
 
-          if (d < nearestDistance) {
-            nearest = el;
-            nearestDistance = d;
+          if (d<nearestDistance) {
+            nearest=el;
+            nearestDistance=d;
           }
         }
 
         if (nearest) {
           nearest.object3D.getWorldPosition(this.world);
-          this.holds[key] = {
+          this.holds[key]={
             el:nearest,
             offset:this.world.clone().sub(this.center)
           };
 
-          if (nearest.id === 'near')
+          if (nearest.id==='near')
             nearest.setAttribute('color','#fff176');
         }
       }
 
-      this.wasPinching[key] = pinching;
+      this.wasPinching[key]=pinching;
     }
   }
 });
 
 /* MOVING PERSON */
 AFRAME.registerComponent('moving-person', {
-  tick: function(time) {
+  tick:function(time) {
     if (!$('#motion').checked) return;
-    $('#person').object3D.position.x =
+
+    $('#person').object3D.position.x=
       Math.sin(time/1600)*1.8;
   }
 });
 
+/* XR MODE SELECTION */
+async function enterMode(mode) {
+  try {
+    if (!navigator.xr) {
+      alert('WebXR is unavailable in this browser.');
+      return;
+    }
+
+    const supported=await navigator.xr.isSessionSupported(
+      mode==='ar'?'immersive-ar':'immersive-vr'
+    );
+
+    if (!supported) {
+      alert(
+        mode==='ar'
+          ? 'AR is not supported by this browser.'
+          : 'VR is not supported by this browser.'
+      );
+      return;
+    }
+
+    // A-Frame handles session setup, reference spaces,
+    // controllers, hand tracking and its render loop.
+    scene.enterVR(mode==='ar');
+  } catch(e) {
+    console.error('Could not enter '+mode,e);
+    alert('Unable to start '+mode.toUpperCase()+': '+e.message);
+  }
+}
+
+$('#enterVR').addEventListener('click',()=>enterMode('vr'));
+$('#enterAR').addEventListener('click',()=>enterMode('ar'));
+
 /* MODE HANDLING */
 function setEnvironmentMode() {
-  const ar = scene.is('ar-mode');
-  const vr = scene.is('vr-mode');
+  const ar=scene.is('ar-mode');
+  const vr=scene.is('vr-mode');
 
-  $('#virtualRoom').object3D.visible = !ar;
-  $('#buttonStation').object3D.visible = !ar;
+  $('#virtualRoom').object3D.visible=!ar;
+  $('#buttonStation').object3D.visible=!ar;
 
-  $('#modeStatus').textContent =
-    ar ? 'Mixed Reality' :
-    vr ? 'Virtual Reality' : 'Browser preview';
+  $('#modeStatus').textContent=
+    ar?'Mixed Reality':
+    vr?'Virtual Reality':'Browser preview';
 
   if (ar) {
     scene.removeAttribute('background');
   } else {
-    scene.setAttribute('background','color','#d9d4ca');
+    scene.setAttribute(
+      'background','color','#d9d4ca'
+    );
+  }
+
+  // Shorten wrist panel in AR.
+  $('#wristMotionGroup').object3D.visible=!ar;
+
+  const simulationGroup=$('#wristSimulationGroup');
+
+  if (ar) {
+    simulationGroup.object3D.position.y=0.083;
+
+    $('#wristBackground').setAttribute(
+      'height',0.52
+    );
+    $('#wristBackground').object3D.position.y=0.04;
+  } else {
+    simulationGroup.object3D.position.y=0;
+
+    $('#wristBackground').setAttribute(
+      'height',0.60
+    );
+    $('#wristBackground').object3D.position.y=0;
   }
 
   if (!ar && !vr)
-    $('#wristPanel').object3D.visible = false;
+    $('#wristPanel').object3D.visible=false;
 }
 
 scene.addEventListener('enter-ar',setEnvironmentMode);
@@ -873,19 +986,20 @@ scene.addEventListener('exit-vr',setEnvironmentMode);
 scene.addEventListener('loaded',setEnvironmentMode);
 
 /* BROWSER CONTROLS */
-$('#field').addEventListener('input',e => {
-  fieldPercent = Number(e.target.value);
+$('#field').addEventListener('input',e=>{
+  fieldPercent=Number(e.target.value);
   syncSettings();
 });
 
-$('#dist').addEventListener('input',e => {
-  useful = Number(e.target.value);
+$('#dist').addEventListener('input',e=>{
+  useful=Number(e.target.value);
   syncSettings();
 });
 
 $('#glare').addEventListener('change',syncSettings);
 $('#motion').addEventListener('change',syncSettings);
-$('#toggle').addEventListener('click',() =>
+
+$('#toggle').addEventListener('click',()=>
   applyAction('simulation')
 );
 
