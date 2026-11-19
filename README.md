@@ -3,11 +3,6 @@
 
 An interactive WebXR training prototype designed to help intervenors explore how different functional vision characteristics can affect everyday activities, environmental awareness, and object interaction.
 
-Developed for training purposes at Sensity.
-
-**Current live version:** v6  
-**In development:** v7 — Mixed Reality (MR) feasibility testing
-
 > This simulator is an educational approximation of functional vision, not a medical reconstruction of an individual's subjective visual experience.
 
 ## Project Goals
