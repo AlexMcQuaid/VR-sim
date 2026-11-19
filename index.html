@@ -4,409 +4,1149 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Functional Vision Simulation — Interactive Quest Prototype</title>
+  <title>Functional Vision Simulation — Quest Prototype v7</title>
   <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
   <style>
-    body{font-family:system-ui,sans-serif;margin:0;background:#111;color:#fff}
-    #panel{position:fixed;z-index:20;left:12px;top:12px;max-width:390px;background:#111e;padding:14px;border-radius:12px}
-    button,input{font:inherit}button{padding:10px 12px;margin:4px;border:0;border-radius:8px}
-    label{display:block;margin:8px 0}.small{font-size:.85rem;color:#ddd}
-    #status{margin-top:8px;font-weight:600}
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      background: #111;
+      color: #fff;
+    }
+    #panel {
+      position: fixed;
+      z-index: 20;
+      left: 12px;
+      top: 12px;
+      max-width: 390px;
+      background: #111e;
+      padding: 14px;
+      border-radius: 12px;
+    }
+    button, input { font: inherit; }
+    button {
+      padding: 10px 12px;
+      margin: 4px;
+      border: 0;
+      border-radius: 8px;
+    }
+    label { display: block; margin: 8px 0; }
+    .small { font-size: .85rem; color: #ddd; }
+    #status { margin-top: 8px; font-weight: 600; }
   </style>
 </head>
 <body>
+
 <div id="panel">
-  <strong>Functional Vision Simulation v7 — VR / MR test</strong>
-  <div class="small">Training approximation, not a literal reconstruction of the person's vision.</div>
-  <label>Useful viewing distance: <span id="distVal">0.5 m</span>
-    <input id="dist" type="range" min="0.3" max="2.0" value="0.5" step="0.1">
+  <strong>Functional Vision Simulation v7 — MR Test</strong>
+  <div class="small">
+    Training approximation, not a literal reconstruction
+    of a person's vision.
+  </div>
+
+  <label>
+    Useful viewing distance:
+    <span id="distVal">0.5 m</span>
+    <input id="dist" type="range"
+           min="0.3" max="2.0" value="0.5" step="0.1">
   </label>
-  <label>Peripheral field: <span id="fieldVal">100%</span>
-    <input id="field" type="range" min="20" max="100" value="100" step="5">
+
+  <label>
+    Peripheral field:
+    <span id="fieldVal">100%</span>
+    <input id="field" type="range"
+           min="20" max="100" value="100" step="5">
   </label>
-  <label><input id="glare" type="checkbox"> Strong glare</label>
-  <label><input id="motion" type="checkbox" checked> Moving person</label>
-  <div class="small"><strong>Choose a mode:</strong> use the headset's Enter VR or Enter AR button below the scene. AR = mixed-reality passthrough (if supported).</div>
+
+  <label>
+    <input id="glare" type="checkbox"> Strong glare
+  </label>
+
+  <label>
+    <input id="motion" type="checkbox" checked>
+    Moving person
+  </label>
+
+  <div class="small">
+    Mixed Reality test: use the immersive AR button
+    to attempt Quest 3 passthrough.
+  </div>
+
   <button id="toggle">Show normal vision</button>
-  <div class="small" id="modeStatus">Mode: browser preview</div>
+
+  <div class="small" id="modeStatus">
+    Mode: browser preview
+  </div>
+
   <div id="status">SIMULATION ON</div>
-  <div class="small">In VR or MR: sound buttons on your right; vision controls on your left. Touch controls with an index fingertip. Browser controls also remain available.</div>
-  <div class="small">In VR: pinch to grab the virtual cube or cup. In MR: handle only real, safe objects; virtual room objects are hidden.</div>
-  <div class="small" id="handStatus">Hand tracking: waiting for XR</div>
+
+  <div class="small">
+    In immersive mode: sound buttons on your right,
+    vision controls on your left. Touch controls
+    with an index fingertip.
+  </div>
+
+  <div class="small">
+    In VR, pinch to grab the virtual cube or mug.
+    In MR, handle only real, safe objects.
+  </div>
+
+  <div class="small" id="handStatus">
+    Hand tracking: waiting for XR
+  </div>
 </div>
 
-<a-scene renderer="antialias: true; colorManagement: true; alpha: true"
-         background="color:#d9d4ca"
-         xr-mode-ui="enabled: true"
-         ar-mode-ui="enabled: true"
-         webxr="optionalFeatures: hand-tracking, local-floor, bounded-floor">
-  <a-assets><a-mixin id="wall" material="roughness:1"></a-mixin></a-assets>
+<a-scene
+  renderer="antialias: true; colorManagement: true; alpha: true"
+  background="color: #d9d4ca"
+  xr-mode-ui="enabled: true; XRMode: ar"
+  webxr="optionalFeatures: hand-tracking, local-floor, bounded-floor">
 
+  <a-assets>
+    <a-mixin id="wall" material="roughness: 1"></a-mixin>
+  </a-assets>
+
+  <!-- VIRTUAL ROOM: HIDDEN IN AR MODE -->
   <a-entity id="virtualRoom">
-    <a-entity light="type:ambient; intensity:0.75"></a-entity>
-    <a-entity light="type:directional; intensity:0.7" position="-2 4 2"></a-entity>
-    <a-plane rotation="-90 0 0" width="8" height="8" color="#9b8d78"></a-plane>
-    <a-plane position="0 2 -4" width="8" height="4" color="#ded8cd"></a-plane>
-    <a-plane position="-4 2 0" rotation="0 90 0" width="8" height="4" color="#d4cec3"></a-plane>
-    <a-plane position="4 2 0" rotation="0 -90 0" width="8" height="4" color="#d4cec3"></a-plane>
 
-    <a-plane id="window" position="-2.6 2.2 -3.96" width="1.6" height="1.7"
-             material="color:#fff; emissive:#fff; emissiveIntensity:0.7"></a-plane>
-    <a-box position="0 0.72 -2.25" width="2.2" height="0.12" depth="0.9" color="#6f4f35"></a-box>
-    <a-box position="-0.85 0.35 -2.25" width="0.12" height="0.7" depth="0.12" color="#59402f"></a-box>
-    <a-box position="0.85 0.35 -2.25" width="0.12" height="0.7" depth="0.12" color="#59402f"></a-box>
-    <a-cylinder id="mug" position="0.25 0.91 -2.25" radius="0.11" height="0.28" color="#f4f1e9"
-                vision-target="label: mug" pinch-grabbable></a-cylinder>
-    <a-box id="card" position="-0.45 0.87 -2.22" width="0.34" height="0.03" depth="0.24" color="#111"
-           vision-target="label: communication card"></a-box>
-    <a-entity id="person" position="2 0 -3" vision-target="label: person">
-      <a-sphere position="0 1.65 0" radius="0.2" color="#8b6f61"></a-sphere>
-      <a-cylinder position="0 0.95 0" radius="0.28" height="1.15" color="#42546b"></a-cylinder>
+    <a-entity
+      light="type: ambient; intensity: 0.75">
     </a-entity>
-    <a-box id="near" position="-0.35 1.25 -0.55" width="0.16" height="0.16" depth="0.16" color="#e9d84b"
-           vision-target="label: close object" pinch-grabbable></a-box>
+
+    <a-entity
+      light="type: directional; intensity: 0.7"
+      position="-2 4 2">
+    </a-entity>
+
+    <a-plane
+      rotation="-90 0 0"
+      width="8"
+      height="8"
+      color="#9b8d78">
+    </a-plane>
+
+    <a-plane
+      position="0 2 -4"
+      width="8"
+      height="4"
+      color="#ded8cd">
+    </a-plane>
+
+    <a-plane
+      position="-4 2 0"
+      rotation="0 90 0"
+      width="8"
+      height="4"
+      color="#d4cec3">
+    </a-plane>
+
+    <a-plane
+      position="4 2 0"
+      rotation="0 -90 0"
+      width="8"
+      height="4"
+      color="#d4cec3">
+    </a-plane>
+
+    <a-plane
+      id="window"
+      position="-2.6 2.2 -3.96"
+      width="1.6"
+      height="1.7"
+      material="color: #fff; emissive: #fff; emissiveIntensity: 0.7">
+    </a-plane>
+
+    <a-box
+      position="0 0.72 -2.25"
+      width="2.2"
+      height="0.12"
+      depth="0.9"
+      color="#6f4f35">
+    </a-box>
+
+    <a-box
+      position="-0.85 0.35 -2.25"
+      width="0.12"
+      height="0.7"
+      depth="0.12"
+      color="#59402f">
+    </a-box>
+
+    <a-box
+      position="0.85 0.35 -2.25"
+      width="0.12"
+      height="0.7"
+      depth="0.12"
+      color="#59402f">
+    </a-box>
+
+    <a-cylinder
+      id="mug"
+      position="0.25 0.91 -2.25"
+      radius="0.11"
+      height="0.28"
+      color="#f4f1e9"
+      vision-target="label: mug"
+      pinch-grabbable>
+    </a-cylinder>
+
+    <a-box
+      id="card"
+      position="-0.45 0.87 -2.22"
+      width="0.34"
+      height="0.03"
+      depth="0.24"
+      color="#111"
+      vision-target="label: communication card">
+    </a-box>
+
+    <a-entity
+      id="person"
+      position="2 0 -3"
+      vision-target="label: person">
+
+      <a-sphere
+        position="0 1.65 0"
+        radius="0.2"
+        color="#8b6f61">
+      </a-sphere>
+
+      <a-cylinder
+        position="0 0.95 0"
+        radius="0.28"
+        height="1.15"
+        color="#42546b">
+      </a-cylinder>
+
+    </a-entity>
+
+    <a-box
+      id="near"
+      position="-0.35 1.25 -0.55"
+      width="0.16"
+      height="0.16"
+      depth="0.16"
+      color="#e9d84b"
+      vision-target="label: close object"
+      pinch-grabbable>
+    </a-box>
+
   </a-entity>
 
-  <!-- Panels remain visible in VR and MR. -->
+  <!-- SOUND BUTTON PANEL -->
   <a-entity id="buttonStation" position="0.65 1.37 -0.95">
-    <a-box width="0.70" height="0.49" depth="0.055" color="#293443"></a-box>
-    <a-text value="TOUCH A BUTTON" align="center" width="0.65" position="0 0.195 0.034" color="#ffffff"></a-text>
-    <a-box class="sound-button" data-index="0" position="-0.21 0.065 0.048" width="0.145" height="0.115" depth="0.04" color="#d45b55" sound-key="index:0"></a-box>
-    <a-box class="sound-button" data-index="1" position="0 0.065 0.048" width="0.145" height="0.115" depth="0.04" color="#e0aa43" sound-key="index:1"></a-box>
-    <a-box class="sound-button" data-index="2" position="0.21 0.065 0.048" width="0.145" height="0.115" depth="0.04" color="#60b77c" sound-key="index:2"></a-box>
-    <a-box class="sound-button" data-index="3" position="-0.21 -0.095 0.048" width="0.145" height="0.115" depth="0.04" color="#5b9bd5" sound-key="index:3"></a-box>
-    <a-box class="sound-button" data-index="4" position="0 -0.095 0.048" width="0.145" height="0.115" depth="0.04" color="#9c75d5" sound-key="index:4"></a-box>
-    <a-box class="sound-button" data-index="5" position="0.21 -0.095 0.048" width="0.145" height="0.115" depth="0.04" color="#d979b4" sound-key="index:5"></a-box>
-    <a-text id="buttonFeedback" value="Touch or click" align="center" width="0.65" position="0 -0.207 0.035" color="#ffffff"></a-text>
+
+    <a-box
+      width="0.70"
+      height="0.49"
+      depth="0.055"
+      color="#293443">
+    </a-box>
+
+    <a-text
+      value="TOUCH A BUTTON"
+      align="center"
+      width="0.65"
+      position="0 0.195 0.034"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="sound-button"
+      data-index="0"
+      position="-0.21 0.065 0.048"
+      width="0.145" height="0.115" depth="0.04"
+      color="#d45b55"
+      sound-key="index: 0">
+    </a-box>
+
+    <a-box class="sound-button"
+      data-index="1"
+      position="0 0.065 0.048"
+      width="0.145" height="0.115" depth="0.04"
+      color="#e0aa43"
+      sound-key="index: 1">
+    </a-box>
+
+    <a-box class="sound-button"
+      data-index="2"
+      position="0.21 0.065 0.048"
+      width="0.145" height="0.115" depth="0.04"
+      color="#60b77c"
+      sound-key="index: 2">
+    </a-box>
+
+    <a-box class="sound-button"
+      data-index="3"
+      position="-0.21 -0.095 0.048"
+      width="0.145" height="0.115" depth="0.04"
+      color="#5b9bd5"
+      sound-key="index: 3">
+    </a-box>
+
+    <a-box class="sound-button"
+      data-index="4"
+      position="0 -0.095 0.048"
+      width="0.145" height="0.115" depth="0.04"
+      color="#9c75d5"
+      sound-key="index: 4">
+    </a-box>
+
+    <a-box class="sound-button"
+      data-index="5"
+      position="0.21 -0.095 0.048"
+      width="0.145" height="0.115" depth="0.04"
+      color="#d979b4"
+      sound-key="index: 5">
+    </a-box>
+
+    <a-text
+      id="buttonFeedback"
+      value="Touch or click"
+      align="center"
+      width="0.65"
+      position="0 -0.207 0.035"
+      color="#ffffff">
+    </a-text>
+
   </a-entity>
 
+  <!-- IN-VR / MR SETTINGS PANEL -->
   <a-entity id="settingsStation" position="-0.68 1.39 -0.95">
-    <a-box width="0.74" height="0.94" depth="0.055" color="#243746"></a-box>
-    <a-text value="VISION SETTINGS" align="center" width="0.70" position="0 0.410 0.035" color="#ffffff"></a-text>
-    <a-text id="vrDistance" value="Distance: 0.5 m" align="center" width="0.67" position="0 0.330 0.036" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="distanceDown" position="-0.19 0.235 0.048" width="0.24" height="0.115" depth="0.04" color="#477bba"></a-box>
-    <a-text value="- 0.1m" align="center" width="0.56" position="-0.19 0.227 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="distanceUp" position="0.19 0.235 0.048" width="0.24" height="0.115" depth="0.04" color="#477bba"></a-box>
-    <a-text value="+ 0.1m" align="center" width="0.56" position="0.19 0.227 0.075" color="#ffffff"></a-text>
-    <a-text id="vrField" value="Peripheral field: 100%" align="center" width="0.67" position="0 0.140 0.036" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="fieldDown" position="-0.19 0.055 0.048" width="0.24" height="0.10" depth="0.04" color="#477bba"></a-box>
-    <a-text value="Field -" align="center" width="0.56" position="-0.19 0.048 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="fieldUp" position="0.19 0.055 0.048" width="0.24" height="0.10" depth="0.04" color="#477bba"></a-box>
-    <a-text value="Field +" align="center" width="0.56" position="0.19 0.048 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="glare" position="0 -0.070 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
-    <a-text id="vrGlare" value="Glare: OFF" align="center" width="0.65" position="0 -0.080 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="motion" position="0 -0.190 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
-    <a-text id="vrMotion" value="Moving person: ON" align="center" width="0.65" position="0 -0.200 0.075" color="#ffffff"></a-text>
-    <a-box class="touch-control" data-action="simulation" position="0 -0.310 0.048" width="0.60" height="0.095" depth="0.04" color="#536b78"></a-box>
-    <a-text id="vrSimulation" value="Simulation: ON" align="center" width="0.65" position="0 -0.320 0.075" color="#ffffff"></a-text>
+
+    <a-box
+      width="0.74"
+      height="0.94"
+      depth="0.055"
+      color="#243746">
+    </a-box>
+
+    <a-text
+      value="VISION SETTINGS"
+      align="center"
+      width="0.70"
+      position="0 0.410 0.035"
+      color="#ffffff">
+    </a-text>
+
+    <a-text
+      id="vrDistance"
+      value="Distance: 0.5 m"
+      align="center"
+      width="0.67"
+      position="0 0.330 0.036"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="distanceDown"
+      position="-0.19 0.235 0.048"
+      width="0.24" height="0.115" depth="0.04"
+      color="#477bba">
+    </a-box>
+
+    <a-text
+      value="- 0.1m"
+      align="center"
+      width="0.56"
+      position="-0.19 0.227 0.075"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="distanceUp"
+      position="0.19 0.235 0.048"
+      width="0.24" height="0.115" depth="0.04"
+      color="#477bba">
+    </a-box>
+
+    <a-text
+      value="+ 0.1m"
+      align="center"
+      width="0.56"
+      position="0.19 0.227 0.075"
+      color="#ffffff">
+    </a-text>
+
+    <a-text
+      id="vrField"
+      value="Peripheral field: 100%"
+      align="center"
+      width="0.67"
+      position="0 0.140 0.036"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="fieldDown"
+      position="-0.19 0.055 0.048"
+      width="0.24" height="0.10" depth="0.04"
+      color="#477bba">
+    </a-box>
+
+    <a-text
+      value="Field -"
+      align="center"
+      width="0.56"
+      position="-0.19 0.048 0.075"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="fieldUp"
+      position="0.19 0.055 0.048"
+      width="0.24" height="0.10" depth="0.04"
+      color="#477bba">
+    </a-box>
+
+    <a-text
+      value="Field +"
+      align="center"
+      width="0.56"
+      position="0.19 0.048 0.075"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="glare"
+      position="0 -0.070 0.048"
+      width="0.60" height="0.095" depth="0.04"
+      color="#536b78">
+    </a-box>
+
+    <a-text
+      id="vrGlare"
+      value="Glare: OFF"
+      align="center"
+      width="0.65"
+      position="0 -0.080 0.075"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="motion"
+      position="0 -0.190 0.048"
+      width="0.60" height="0.095" depth="0.04"
+      color="#536b78">
+    </a-box>
+
+    <a-text
+      id="vrMotion"
+      value="Moving person: ON"
+      align="center"
+      width="0.65"
+      position="0 -0.200 0.075"
+      color="#ffffff">
+    </a-text>
+
+    <a-box class="touch-control"
+      data-action="simulation"
+      position="0 -0.310 0.048"
+      width="0.60" height="0.095" depth="0.04"
+      color="#536b78">
+    </a-box>
+
+    <a-text
+      id="vrSimulation"
+      value="Simulation: ON"
+      align="center"
+      width="0.65"
+      position="0 -0.320 0.075"
+      color="#ffffff">
+    </a-text>
+
   </a-entity>
 
-  <a-entity id="leftHand" hand-tracking-controls="hand: left; modelStyle: mesh"></a-entity>
-  <a-entity id="rightHand" hand-tracking-controls="hand: right; modelStyle: mesh"></a-entity>
+  <!-- HAND TRACKING -->
+  <a-entity
+    id="leftHand"
+    hand-tracking-controls="hand: left; modelStyle: mesh">
+  </a-entity>
 
+  <a-entity
+    id="rightHand"
+    hand-tracking-controls="hand: right; modelStyle: mesh">
+  </a-entity>
+
+  <!-- CAMERA AND VISION EFFECTS -->
   <a-entity id="rig" position="0 0 0">
-    <a-camera id="cam" position="0 1.6 0" look-controls wasd-controls>
-      <a-plane id="fieldOverlay" position="0 0 -0.48" width="2" height="2" peripheral-field></a-plane>
-      <a-entity id="glareOverlay" geometry="primitive:plane;width:0.7;height:0.7"
-                material="shader:flat;color:#fff;transparent:true;opacity:0"
-                position="-0.28 0 -0.5"></a-entity>
-      <a-entity id="scotoma1" geometry="primitive:circle;radius:0.13;segments:32"
-                material="shader:flat;color:#111;transparent:true;opacity:0.58"
-                position="-0.13 -0.03 -0.42"></a-entity>
-      <a-entity id="scotoma2" geometry="primitive:circle;radius:0.075;segments:32"
-                material="shader:flat;color:#222;transparent:true;opacity:0.48"
-                position="0.18 0.11 -0.43"></a-entity>
+
+    <a-camera
+      id="cam"
+      position="0 1.6 0"
+      look-controls
+      wasd-controls>
+
+      <a-plane
+        id="fieldOverlay"
+        position="0 0 -0.48"
+        width="2"
+        height="2"
+        peripheral-field>
+      </a-plane>
+
+      <a-entity
+        id="glareOverlay"
+        geometry="primitive: plane; width: 0.7; height: 0.7"
+        material="shader: flat; color: #fff; transparent: true; opacity: 0"
+        position="-0.28 0 -0.5">
+      </a-entity>
+
+      <a-entity
+        id="scotoma1"
+        geometry="primitive: circle; radius: 0.13; segments: 32"
+        material="shader: flat; color: #111; transparent: true; opacity: 0.58"
+        position="-0.13 -0.03 -0.42">
+      </a-entity>
+
+      <a-entity
+        id="scotoma2"
+        geometry="primitive: circle; radius: 0.075; segments: 32"
+        material="shader: flat; color: #222; transparent: true; opacity: 0.48"
+        position="0.18 0.11 -0.43">
+      </a-entity>
+
     </a-camera>
   </a-entity>
+
 </a-scene>
 
 <script>
-let simOn=true, useful=0.5, fieldPercent=100;
-const $=s=>document.querySelector(s);
-const scene=$('a-scene');
+let simOn = true;
+let useful = 0.5;
+let fieldPercent = 100;
 
-AFRAME.registerComponent('vision-target',{
-  schema:{label:{default:'object'}},
-  tick:function(){
-    if(!simOn){
-      this.el.object3D.visible=true;
-      this.el.object3D.traverse(o=>{if(o.material){o.material.opacity=1;}});
+const $ = s => document.querySelector(s);
+const scene = $('a-scene');
+
+/* DISTANCE-BASED OBJECT VISIBILITY */
+AFRAME.registerComponent('vision-target', {
+  schema: {
+    label: {default: 'object'}
+  },
+
+  tick: function() {
+    if (!simOn) {
+      this.el.object3D.visible = true;
+
+      this.el.object3D.traverse(o => {
+        if (o.material) {
+          o.material.opacity = 1;
+        }
+      });
       return;
     }
-    const cam=$('#cam').object3D;
-    const p1=new THREE.Vector3(), p2=new THREE.Vector3();
-    cam.getWorldPosition(p1);this.el.object3D.getWorldPosition(p2);
-    const d=p1.distanceTo(p2);
-    const excess=Math.max(0,d-useful);
-    const visibility=Math.max(0.12,1-excess/2.5);
-    this.el.object3D.traverse(o=>{
-      if(o.material){o.material.transparent=true;o.material.opacity=visibility;}
+
+    const cam = $('#cam').object3D;
+    const p1 = new THREE.Vector3();
+    const p2 = new THREE.Vector3();
+
+    cam.getWorldPosition(p1);
+    this.el.object3D.getWorldPosition(p2);
+
+    const d = p1.distanceTo(p2);
+    const excess = Math.max(0, d - useful);
+    const visibility = Math.max(0.12, 1 - excess / 2.5);
+
+    this.el.object3D.traverse(o => {
+      if (o.material) {
+        o.material.transparent = true;
+        o.material.opacity = visibility;
+      }
     });
   }
 });
 
+/* PERIPHERAL FIELD SHADER */
 AFRAME.registerComponent('peripheral-field', {
-  init:function(){
-    const material=new THREE.ShaderMaterial({
-      transparent:true, depthTest:false, depthWrite:false,
-      uniforms:{radius:{value:1.5}},
-      vertexShader:`varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
-      fragmentShader:`
+  init: function() {
+    const material = new THREE.ShaderMaterial({
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+
+      uniforms: {
+        radius: {value: 1.5}
+      },
+
+      vertexShader: `
+        varying vec2 vUv;
+
+        void main() {
+          vUv = uv;
+          gl_Position =
+            projectionMatrix *
+            modelViewMatrix *
+            vec4(position, 1.0);
+        }
+      `,
+
+      fragmentShader: `
         uniform float radius;
         varying vec2 vUv;
-        void main(){
-          vec2 p=(vUv-vec2(0.5))*2.0;
-          float r=length(p);
-          float opacity=smoothstep(radius-0.10,radius+0.12,r)*0.96;
-          gl_FragColor=vec4(0.0,0.0,0.0,opacity);
+
+        void main() {
+          vec2 p = (vUv - vec2(0.5)) * 2.0;
+          float r = length(p);
+
+          float opacity =
+            smoothstep(radius - 0.10, radius + 0.12, r) * 0.96;
+
+          gl_FragColor = vec4(0.0, 0.0, 0.0, opacity);
         }
       `
     });
-    this.material=material;
-    this.el.addEventListener('object3dset',e=>{
-      if(e.detail.type!=='mesh')return;
-      const mesh=this.el.getObject3D('mesh');
-      if(mesh){mesh.material=material;mesh.renderOrder=999;mesh.frustumCulled=false;}
+
+    this.material = material;
+
+    this.el.addEventListener('object3dset', e => {
+      if (e.detail.type !== 'mesh') return;
+
+      const mesh = this.el.getObject3D('mesh');
+
+      if (mesh) {
+        mesh.material = material;
+        mesh.renderOrder = 999;
+        mesh.frustumCulled = false;
+      }
     });
-    const mesh=this.el.getObject3D('mesh');
-    if(mesh){mesh.material=material;mesh.renderOrder=999;mesh.frustumCulled=false;}
-  },
-  tick:function(){
-    this.material.uniforms.radius.value=(!simOn || fieldPercent===100)
-      ? 1.5 : 0.12+0.95*(fieldPercent-20)/80;
-  },
-  remove:function(){this.material.dispose();}
-});
 
-const frequencies=[261.63,293.66,329.63,349.23,392.00,440.00];
-let audioContext=null;
-function playTone(index){
-  try{
-    const AudioCtx=window.AudioContext||window.webkitAudioContext;
-    if(!AudioCtx)return;
-    if(!audioContext)audioContext=new AudioCtx();
-    if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
-    const oscillator=audioContext.createOscillator();
-    const gain=audioContext.createGain();
-    const now=audioContext.currentTime;
-    oscillator.type='sine';oscillator.frequency.value=frequencies[index];
-    gain.gain.setValueAtTime(0.0001,now);
-    gain.gain.exponentialRampToValueAtTime(0.14,now+0.018);
-    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.35);
-    oscillator.connect(gain);gain.connect(audioContext.destination);
-    oscillator.start(now);oscillator.stop(now+0.37);
-  }catch(err){console.warn('Audio unavailable:',err);}
-}
+    const mesh = this.el.getObject3D('mesh');
 
-AFRAME.registerComponent('sound-key',{
-  schema:{index:{type:'int'}},
-  init:function(){
-    this.baseColor=this.el.getAttribute('color');
-    this.pressedUntil=0;
-    this.el.addEventListener('click',()=>this.activate());
+    if (mesh) {
+      mesh.material = material;
+      mesh.renderOrder = 999;
+      mesh.frustumCulled = false;
+    }
   },
-  activate:function(){
-    const now=performance.now();
-    if(now<this.pressedUntil)return;
-    this.pressedUntil=now+300;
-    const index=this.data.index;
-    playTone(index);
-    this.el.setAttribute('color','#ffffff');
-    this.el.setAttribute('scale','1 1 0.6');
-    $('#buttonFeedback').setAttribute('value','Button '+(index+1));
-    setTimeout(()=>{
-      this.el.setAttribute('color',this.baseColor);
-      this.el.setAttribute('scale','1 1 1');
-    },180);
+
+  tick: function() {
+    this.material.uniforms.radius.value =
+      (!simOn || fieldPercent === 100)
+        ? 1.5
+        : 0.12 + 0.95 * (fieldPercent - 20) / 80;
+  },
+
+  remove: function() {
+    this.material.dispose();
   }
 });
 
-function syncSettings(){
-  $('#field').value=fieldPercent;
-  $('#fieldVal').textContent=fieldPercent+'%';
-  $('#vrField').setAttribute('value','Peripheral field: '+fieldPercent+'%');
-  $('#dist').value=useful.toFixed(1);
-  $('#distVal').textContent=useful.toFixed(1)+' m';
-  $('#vrDistance').setAttribute('value','Distance: '+useful.toFixed(1)+' m');
-  $('#vrGlare').setAttribute('value','Glare: '+($('#glare').checked?'ON':'OFF'));
-  $('#vrMotion').setAttribute('value','Moving person: '+($('#motion').checked?'ON':'OFF'));
-  $('#vrSimulation').setAttribute('value','Simulation: '+(simOn?'ON':'OFF'));
-  $('#toggle').textContent=simOn?'Show normal vision':'Show simulation';
-  $('#status').textContent=simOn?'SIMULATION ON':'NORMAL COMPARISON';
-  $('#scotoma1').setAttribute('visible',simOn);
-  $('#scotoma2').setAttribute('visible',simOn);
-  $('#glareOverlay').setAttribute('material','opacity',$('#glare').checked && simOn ? 0.62 : 0);
+/* SOUND BUTTONS */
+const frequencies = [
+  261.63, 293.66, 329.63,
+  349.23, 392.00, 440.00
+];
+
+let audioContext = null;
+
+function playTone(index) {
+  try {
+    const AudioCtx =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioCtx) return;
+
+    if (!audioContext) {
+      audioContext = new AudioCtx();
+    }
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    const now = audioContext.currentTime;
+
+    oscillator.type = 'sine';
+    oscillator.frequency.value = frequencies[index];
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.14, now + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.37);
+
+  } catch (err) {
+    console.warn('Audio unavailable:', err);
+  }
 }
-function applyAction(action){
-  if(action==='distanceDown')useful=Math.max(0.3,Math.round((useful-0.1)*10)/10);
-  if(action==='distanceUp')useful=Math.min(2,Math.round((useful+0.1)*10)/10);
-  if(action==='fieldDown')fieldPercent=Math.max(20,fieldPercent-5);
-  if(action==='fieldUp')fieldPercent=Math.min(100,fieldPercent+5);
-  if(action==='glare')$('#glare').checked=!$('#glare').checked;
-  if(action==='motion')$('#motion').checked=!$('#motion').checked;
-  if(action==='simulation')simOn=!simOn;
+
+AFRAME.registerComponent('sound-key', {
+  schema: {
+    index: {type: 'int'}
+  },
+
+  init: function() {
+    this.baseColor = this.el.getAttribute('color');
+    this.pressedUntil = 0;
+
+    this.el.addEventListener('click', () => this.activate());
+  },
+
+  activate: function() {
+    const now = performance.now();
+
+    if (now < this.pressedUntil) return;
+
+    this.pressedUntil = now + 300;
+
+    const index = this.data.index;
+
+    playTone(index);
+
+    this.el.setAttribute('color', '#ffffff');
+    this.el.setAttribute('scale', '1 1 0.6');
+
+    $('#buttonFeedback').setAttribute(
+      'value', 'Button ' + (index + 1)
+    );
+
+    setTimeout(() => {
+      this.el.setAttribute('color', this.baseColor);
+      this.el.setAttribute('scale', '1 1 1');
+    }, 180);
+  }
+});
+
+/* SETTINGS SYNCHRONIZATION */
+function syncSettings() {
+  $('#field').value = fieldPercent;
+  $('#fieldVal').textContent = fieldPercent + '%';
+
+  $('#vrField').setAttribute(
+    'value',
+    'Peripheral field: ' + fieldPercent + '%'
+  );
+
+  $('#dist').value = useful.toFixed(1);
+  $('#distVal').textContent = useful.toFixed(1) + ' m';
+
+  $('#vrDistance').setAttribute(
+    'value',
+    'Distance: ' + useful.toFixed(1) + ' m'
+  );
+
+  $('#vrGlare').setAttribute(
+    'value',
+    'Glare: ' + ($('#glare').checked ? 'ON' : 'OFF')
+  );
+
+  $('#vrMotion').setAttribute(
+    'value',
+    'Moving person: ' + ($('#motion').checked ? 'ON' : 'OFF')
+  );
+
+  $('#vrSimulation').setAttribute(
+    'value',
+    'Simulation: ' + (simOn ? 'ON' : 'OFF')
+  );
+
+  $('#toggle').textContent =
+    simOn ? 'Show normal vision' : 'Show simulation';
+
+  $('#status').textContent =
+    simOn ? 'SIMULATION ON' : 'NORMAL COMPARISON';
+
+  $('#scotoma1').setAttribute('visible', simOn);
+  $('#scotoma2').setAttribute('visible', simOn);
+
+  $('#glareOverlay').setAttribute(
+    'material',
+    'opacity',
+    $('#glare').checked && simOn ? 0.62 : 0
+  );
+}
+
+function applyAction(action) {
+  if (action === 'distanceDown') {
+    useful = Math.max(
+      0.3,
+      Math.round((useful - 0.1) * 10) / 10
+    );
+  }
+
+  if (action === 'distanceUp') {
+    useful = Math.min(
+      2,
+      Math.round((useful + 0.1) * 10) / 10
+    );
+  }
+
+  if (action === 'fieldDown') {
+    fieldPercent = Math.max(20, fieldPercent - 5);
+  }
+
+  if (action === 'fieldUp') {
+    fieldPercent = Math.min(100, fieldPercent + 5);
+  }
+
+  if (action === 'glare') {
+    $('#glare').checked = !$('#glare').checked;
+  }
+
+  if (action === 'motion') {
+    $('#motion').checked = !$('#motion').checked;
+  }
+
+  if (action === 'simulation') {
+    simOn = !simOn;
+  }
+
   syncSettings();
 }
-AFRAME.registerComponent('finger-button-touch',{
-  init:function(){
-    this.tip=new THREE.Vector3();this.local=new THREE.Vector3();
-    this.contact={left:'',right:''};this.lastStatus='';
-    this.stations=[
-      {id:'buttonStation',selector:'.sound-button',kind:'sound'},
-      {id:'settingsStation',selector:'.touch-control',kind:'setting'}
+
+/* FINGERTIP BUTTON INTERACTION */
+AFRAME.registerComponent('finger-button-touch', {
+  init: function() {
+    this.tip = new THREE.Vector3();
+    this.local = new THREE.Vector3();
+
+    this.contact = {
+      left: '',
+      right: ''
+    };
+
+    this.lastStatus = '';
+
+    this.stations = [
+      {
+        id: 'buttonStation',
+        selector: '.sound-button',
+        kind: 'sound'
+      },
+      {
+        id: 'settingsStation',
+        selector: '.touch-control',
+        kind: 'setting'
+      }
     ];
-    document.querySelectorAll('.touch-control').forEach(el=>{
-      el.addEventListener('click',()=>applyAction(el.dataset.action));
+
+    document.querySelectorAll('.touch-control').forEach(el => {
+      el.addEventListener('click', () => {
+        applyAction(el.dataset.action);
+      });
     });
   },
-  tick:function(){
-    if(!scene.is('vr-mode') && !scene.is('ar-mode'))return;
-    const xr=scene.renderer && scene.renderer.xr;
-    if(!xr)return;
-    let handsVisible=0;
-    for(let handIndex=0;handIndex<2;handIndex++){
-      const hand=xr.getHand(handIndex);
-      const tip=hand && hand.joints && hand.joints['index-finger-tip'];
-      const key=handIndex===0?'left':'right';
-      if(!tip || !tip.visible){this.contact[key]='';continue;}
+
+  tick: function() {
+    if (!scene.is('vr-mode') && !scene.is('ar-mode')) return;
+
+    const xr = scene.renderer && scene.renderer.xr;
+    if (!xr) return;
+
+    let handsVisible = 0;
+
+    for (let handIndex = 0; handIndex < 2; handIndex++) {
+      const hand = xr.getHand(handIndex);
+
+      const tip = hand && hand.joints &&
+        hand.joints['index-finger-tip'];
+
+      const key = handIndex === 0 ? 'left' : 'right';
+
+      if (!tip || !tip.visible) {
+        this.contact[key] = '';
+        continue;
+      }
+
       handsVisible++;
+
       tip.getWorldPosition(this.tip);
-      let touched='';let target=null;let kind='';
-      for(const stationInfo of this.stations){
-        const station=$('#'+stationInfo.id).object3D;
-        this.local.copy(this.tip);station.worldToLocal(this.local);
-        if(this.local.z<0.012 || this.local.z>0.125)continue;
-        const buttons=[...document.querySelectorAll(stationInfo.selector)];
-        for(let i=0;i<buttons.length;i++){
-          const el=buttons[i];const p=el.object3D.position;
-          const geometry=el.getAttribute('geometry');
-          const width=geometry.width||0.145;
-          const height=geometry.height||0.115;
-          if(Math.abs(this.local.x-p.x)<width/2 && Math.abs(this.local.y-p.y)<height/2){
-            touched=stationInfo.kind+':'+i;target=el;kind=stationInfo.kind;break;
+
+      let touched = '';
+      let target = null;
+      let kind = '';
+
+      for (const stationInfo of this.stations) {
+        const station =
+          $('#' + stationInfo.id).object3D;
+
+        this.local.copy(this.tip);
+        station.worldToLocal(this.local);
+
+        if (this.local.z < 0.012 ||
+            this.local.z > 0.125) continue;
+
+        const buttons = [
+          ...document.querySelectorAll(stationInfo.selector)
+        ];
+
+        for (let i = 0; i < buttons.length; i++) {
+          const el = buttons[i];
+          const p = el.object3D.position;
+          const geometry = el.getAttribute('geometry');
+
+          const width = geometry.width || 0.145;
+          const height = geometry.height || 0.115;
+
+          if (
+            Math.abs(this.local.x - p.x) < width / 2 &&
+            Math.abs(this.local.y - p.y) < height / 2
+          ) {
+            touched = stationInfo.kind + ':' + i;
+            target = el;
+            kind = stationInfo.kind;
+            break;
           }
         }
-        if(touched)break;
+
+        if (touched) break;
       }
-      if(touched!==this.contact[key]){
-        if(target){
-          if(kind==='sound')target.components['sound-key'].activate();
-          else applyAction(target.dataset.action);
+
+      if (touched !== this.contact[key]) {
+        if (target) {
+          if (kind === 'sound') {
+            target.components['sound-key'].activate();
+          } else {
+            applyAction(target.dataset.action);
+          }
         }
-        this.contact[key]=touched;
+
+        this.contact[key] = touched;
       }
     }
-    const message=handsVisible?'Hand tracking: '+handsVisible+' hand(s) detected':'Hand tracking: show hands to headset';
-    if(message!==this.lastStatus){$('#handStatus').textContent=message;this.lastStatus=message;}
+
+    const message = handsVisible
+      ? 'Hand tracking: ' + handsVisible + ' hand(s) detected'
+      : 'Hand tracking: show hands to headset';
+
+    if (message !== this.lastStatus) {
+      $('#handStatus').textContent = message;
+      this.lastStatus = message;
+    }
   }
 });
-scene.setAttribute('finger-button-touch','');
 
-$('#field').addEventListener('input',e=>{fieldPercent=Number(e.target.value);syncSettings();});
-$('#dist').addEventListener('input',e=>{useful=parseFloat(e.target.value);syncSettings();});
-$('#glare').addEventListener('change',syncSettings);
-$('#motion').addEventListener('change',syncSettings);
-$('#toggle').addEventListener('click',()=>applyAction('simulation'));
+scene.setAttribute('finger-button-touch', '');
+
+/* BROWSER CONTROLS */
+$('#field').addEventListener('input', e => {
+  fieldPercent = Number(e.target.value);
+  syncSettings();
+});
+
+$('#dist').addEventListener('input', e => {
+  useful = parseFloat(e.target.value);
+  syncSettings();
+});
+
+$('#glare').addEventListener('change', syncSettings);
+$('#motion').addEventListener('change', syncSettings);
+
+$('#toggle').addEventListener('click', () => {
+  applyAction('simulation');
+});
+
 syncSettings();
-scene.addEventListener('enter-vr',()=>{
-  $('#handStatus').textContent='Hand tracking: show hands to headset';
-  if(audioContext && audioContext.state==='suspended')audioContext.resume().catch(()=>{});
-});
-scene.addEventListener('exit-vr',()=>{$('#handStatus').textContent='Hand tracking: waiting for XR';});
 
-function setEnvironmentMode(){
-  const isAR=scene.is('ar-mode');
-  const isVR=scene.is('vr-mode');
-  $('#virtualRoom').object3D.visible=!isAR;
-  $('#modeStatus').textContent=isAR
-    ? 'Mode: MIXED REALITY (passthrough test)'
-    : isVR ? 'Mode: FULL VR' : 'Mode: browser preview';
-  if(isAR)scene.removeAttribute('background');
-  else scene.setAttribute('background','color','#d9d4ca');
-}
-scene.addEventListener('enter-ar',setEnvironmentMode);
-scene.addEventListener('exit-ar',setEnvironmentMode);
-scene.addEventListener('enter-vr',setEnvironmentMode);
-scene.addEventListener('exit-vr',setEnvironmentMode);
-scene.addEventListener('loaded',setEnvironmentMode);
+/* IMMERSIVE MODE EVENTS */
+scene.addEventListener('enter-vr', () => {
+  $('#handStatus').textContent =
+    'Hand tracking: show hands to headset';
 
-AFRAME.registerComponent('moving-person',{
-  tick:function(time){
-    const person=$('#person');
-    if(!person || !$('#motion').checked)return;
-    person.object3D.position.x=Math.sin(time/1600)*1.8;
+  if (audioContext &&
+      audioContext.state === 'suspended') {
+    audioContext.resume().catch(() => {});
   }
 });
-scene.setAttribute('moving-person','');
 
+scene.addEventListener('exit-vr', () => {
+  $('#handStatus').textContent =
+    'Hand tracking: waiting for XR';
+});
+
+/* VR / MIXED REALITY ENVIRONMENT */
+function setEnvironmentMode() {
+  const isAR = scene.is('ar-mode');
+  const isVR = scene.is('vr-mode');
+
+  $('#virtualRoom').object3D.visible = !isAR;
+
+  $('#modeStatus').textContent = isAR
+    ? 'Mode: MIXED REALITY (passthrough test)'
+    : isVR
+      ? 'Mode: FULL VR'
+      : 'Mode: browser preview';
+
+  if (isAR) {
+    scene.removeAttribute('background');
+  } else {
+    scene.setAttribute(
+      'background',
+      'color',
+      '#d9d4ca'
+    );
+  }
+}
+
+scene.addEventListener('enter-ar', setEnvironmentMode);
+scene.addEventListener('exit-ar', setEnvironmentMode);
+scene.addEventListener('enter-vr', setEnvironmentMode);
+scene.addEventListener('exit-vr', setEnvironmentMode);
+scene.addEventListener('loaded', setEnvironmentMode);
+
+/* MOVING PERSON */
+AFRAME.registerComponent('moving-person', {
+  tick: function(time) {
+    const person = $('#person');
+
+    if (!person || !$('#motion').checked) return;
+
+    person.object3D.position.x =
+      Math.sin(time / 1600) * 1.8;
+  }
+});
+
+scene.setAttribute('moving-person', '');
+
+/* VIRTUAL OBJECT GRABBING */
 AFRAME.registerComponent('pinch-grabbable', {});
+
 AFRAME.registerComponent('pinch-grab-manager', {
-  init:function(){
-    this.objects=[...document.querySelectorAll('[pinch-grabbable]')];
-    this.holds={left:null,right:null};
-    this.wasPinching={left:false,right:false};
-    this.tip=new THREE.Vector3();
-    this.thumb=new THREE.Vector3();
-    this.center=new THREE.Vector3();
-    this.world=new THREE.Vector3();
-    this.local=new THREE.Vector3();
+  init: function() {
+    this.objects = [
+      ...document.querySelectorAll('[pinch-grabbable]')
+    ];
+
+    this.holds = {
+      left: null,
+      right: null
+    };
+
+    this.wasPinching = {
+      left: false,
+      right: false
+    };
+
+    this.tip = new THREE.Vector3();
+    this.thumb = new THREE.Vector3();
+    this.center = new THREE.Vector3();
+    this.world = new THREE.Vector3();
+    this.local = new THREE.Vector3();
   },
-  release:function(key){
-    const hold=this.holds[key];
-    if(!hold)return;
-    if(hold.el.id==='near')hold.el.setAttribute('color','#e9d84b');
-    this.holds[key]=null;
+
+  release: function(key) {
+    const hold = this.holds[key];
+
+    if (!hold) return;
+
+    if (hold.el.id === 'near') {
+      hold.el.setAttribute('color', '#e9d84b');
+    }
+
+    this.holds[key] = null;
   },
-  tick:function(){
-    if(!scene.is('vr-mode') || scene.is('ar-mode')){
-      this.release('left');this.release('right');
-      this.wasPinching.left=false;this.wasPinching.right=false;
+
+  tick: function() {
+    if (!scene.is('vr-mode') || scene.is('ar-mode')) {
+      this.release('left');
+      this.release('right');
+
+      this.wasPinching.left = false;
+      this.wasPinching.right = false;
       return;
     }
-    const xr=scene.renderer && scene.renderer.xr;
-    if(!xr)return;
-    for(let i=0;i<2;i++){
-      const key=i===0?'left':'right';
-      const hand=xr.getHand(i);
-      const index=hand && hand.joints && hand.joints['index-finger-tip'];
-      const thumb=hand && hand.joints && hand.joints['thumb-tip'];
-      if(!index || !thumb || !index.visible || !thumb.visible){
-        this.release(key);this.wasPinching[key]=false;continue;
+
+    const xr = scene.renderer && scene.renderer.xr;
+    if (!xr) return;
+
+    for (let i = 0; i < 2; i++) {
+      const key = i === 0 ? 'left' : 'right';
+      const hand = xr.getHand(i);
+
+      const index = hand && hand.joints &&
+        hand.joints['index-finger-tip'];
+
+      const thumb = hand && hand.joints &&
+        hand.joints['thumb-tip'];
+
+      if (
+        !index || !thumb ||
+        !index.visible || !thumb.visible
+      ) {
+        this.release(key);
+        this.wasPinching[key] = false;
+        continue;
       }
+
       index.getWorldPosition(this.tip);
       thumb.getWorldPosition(this.thumb);
-      this.center.copy(this.tip).add(this.thumb).multiplyScalar(0.5);
-      const separation=this.tip.distanceTo(this.thumb);
-      const pinching=separation<0.035;
-      const released=separation>0.055;
-      const hold=this.holds[key];
-      if(hold){
-        if(released){
-          this.release(key);this.wasPinching[key]=false;continue;
+
+      this.center.copy(this.tip)
+        .add(this.thumb)
+        .multiplyScalar(0.5);
+
+      const separation =
+        this.tip.distanceTo(this.thumb);
+
+      const pinching = separation < 0.035;
+      const released = separation > 0.055;
+
+      const hold = this.holds[key];
+
+      if (hold) {
+        if (released) {
+          this.release(key);
+          this.wasPinching[key] = false;
+          continue;
         }
-        this.world.copy(this.center).add(hold.offset);
+
+        this.world.copy(this.center)
+          .add(hold.offset);
+
         this.local.copy(this.world);
+
         hold.el.object3D.parent.worldToLocal(this.local);
         hold.el.object3D.position.copy(this.local);
-      }else if(pinching && !this.wasPinching[key]){
-        let nearest=null, nearestDistance=0.18;
-        for(const el of this.objects){
-          if(this.holds.left?.el===el || this.holds.right?.el===el)continue;
+
+      } else if (
+        pinching && !this.wasPinching[key]
+      ) {
+        let nearest = null;
+        let nearestDistance = 0.18;
+
+        for (const el of this.objects) {
+          if (
+            this.holds.left?.el === el ||
+            this.holds.right?.el === el
+          ) continue;
+
           el.object3D.getWorldPosition(this.world);
-          const d=this.center.distanceTo(this.world);
-          if(d<nearestDistance){nearest=el;nearestDistance=d;}
+
+          const d = this.center.distanceTo(this.world);
+
+          if (d < nearestDistance) {
+            nearest = el;
+            nearestDistance = d;
+          }
         }
-        if(nearest){
+
+        if (nearest) {
           nearest.object3D.getWorldPosition(this.world);
-          this.holds[key]={el:nearest,offset:this.world.clone().sub(this.center)};
-          if(nearest.id==='near')nearest.setAttribute('color','#fff176');
+
+          this.holds[key] = {
+            el: nearest,
+            offset: this.world.clone().sub(this.center)
+          };
+
+          if (nearest.id === 'near') {
+            nearest.setAttribute('color', '#fff176');
+          }
         }
       }
-      this.wasPinching[key]=pinching;
+
+      this.wasPinching[key] = pinching;
     }
   }
 });
-scene.setAttribute('pinch-grab-manager','');
+
+scene.setAttribute('pinch-grab-manager', '');
+
 </script>
 </body>
 </html>
