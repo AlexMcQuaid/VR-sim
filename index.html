@@ -3,69 +3,71 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Functional Vision Simulator v7.3</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Functional Vision Simulator v8</title>
 <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
 <style>
-  body {
-    margin:0;
-    background:#111;
-    color:white;
-    font-family:system-ui,sans-serif;
-  }
-  #panel {
-    position:fixed;
-    top:12px;
-    left:12px;
-    z-index:20;
-    background:#111e;
-    border-radius:12px;
-    padding:14px;
-    max-width:370px;
-  }
-  label {display:block;margin:9px 0}
-  button,input {font:inherit}
-  button {
-    padding:9px;
-    border:0;
-    border-radius:7px;
-    cursor:pointer;
-  }
-  .small {
-    font-size:0.85rem;
-    color:#ddd;
-    margin-top:8px;
-  }
-  .mode-buttons {
-    display:flex;
-    gap:8px;
-    margin:12px 0;
-  }
-  .mode-buttons button {
-    flex:1;
-    background:#376a9a;
-    color:white;
-    font-weight:600;
-  }
-  .mode-buttons button:disabled {
-    opacity:0.45;
-    cursor:not-allowed;
-  }
+body {
+  margin:0;
+  background:#15191d;
+  color:white;
+  font-family:system-ui,sans-serif;
+}
+#panel {
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:20;
+  background:#17212bed;
+  padding:15px;
+  border-radius:12px;
+  width:300px;
+  max-width:calc(100vw - 54px);
+}
+label {display:block;margin:12px 0}
+input[type=range] {width:100%}
+button {
+  border:0;
+  border-radius:7px;
+  padding:10px;
+  font:inherit;
+  cursor:pointer;
+}
+.modeButtons {
+  display:flex;
+  gap:8px;
+  margin:12px 0;
+}
+.modeButtons button {
+  flex:1;
+  background:#467fa9;
+  color:white;
+}
+#toggle {
+  background:#a94f4f;
+  color:white;
+}
+.small {
+  font-size:12px;
+  color:#d0d8de;
+  margin-top:9px;
+}
+#status {margin-top:10px;font-weight:bold}
 </style>
 </head>
 <body>
 
 <div id="panel">
-  <strong>Functional Vision Simulator v7.3</strong>
-  <div class="small">VR / Mixed Reality wrist controls</div>
+  <strong>Functional Vision Simulator v8</strong>
+  <div class="small">Residential environment</div>
 
-  <div class="mode-buttons">
-    <button id="enterVR" type="button">Enter VR</button>
-    <button id="enterAR" type="button">Enter AR</button>
+  <div class="modeButtons">
+    <button id="enterVR">Enter VR</button>
+    <button id="enterAR">Enter AR</button>
   </div>
 
   <label>
-    Useful viewing distance:
+    Viewing distance:
     <span id="distVal">0.5 m</span>
     <input id="dist" type="range"
       min="0.3" max="2" step="0.1" value="0.5">
@@ -79,260 +81,749 @@
   </label>
 
   <label>
-    <input id="glare" type="checkbox"> Strong glare
+    <input id="glare" type="checkbox">
+    Strong glare
   </label>
 
   <label>
     <input id="motion" type="checkbox" checked>
-    Moving person
+    Moving person (VR)
   </label>
+
+  <div id="browserLighting">
+    <strong>Room lighting</strong>
+    <div class="modeButtons">
+      <button data-light="morning">Morning</button>
+      <button data-light="day">Day</button>
+    </div>
+    <div class="modeButtons">
+      <button data-light="dusk">Dusk</button>
+      <button data-light="night">Night</button>
+    </div>
+  </div>
 
   <button id="toggle">Simulation OFF</button>
 
   <div id="status">SIMULATION ON</div>
-  <div id="modeStatus" class="small">Browser preview</div>
-  <div id="handStatus" class="small">Waiting for XR</div>
-
+  <div id="modeStatus" class="small">
+    Browser preview
+  </div>
+  <div id="lightingStatus" class="small">
+    Lighting: Day
+  </div>
   <div class="small">
-    Raise your left wrist to access vision controls.
-    Use your right index finger to touch the buttons.
+    Left wrist: settings.
+    Right index finger: touch controls.
   </div>
 </div>
 
 <a-scene
-  renderer="antialias:true; colorManagement:true; alpha:true"
-  background="color:#d9d4ca"
+  renderer="antialias:true;colorManagement:true;alpha:true"
+  background="color:#b8cbd5"
   xr-mode-ui="enabled:false"
-  webxr="optionalFeatures: hand-tracking, local-floor, bounded-floor">
+  webxr="optionalFeatures:hand-tracking,local-floor,bounded-floor">
 
-  <!-- VIRTUAL ROOM: VR ONLY -->
+  <!-- VR ENVIRONMENT -->
   <a-entity id="virtualRoom">
-    <a-entity light="type:ambient;intensity:0.75"></a-entity>
-    <a-entity light="type:directional;intensity:0.7"
-      position="-2 4 2"></a-entity>
 
-    <a-plane rotation="-90 0 0"
-      width="8" height="8" color="#9b8d78"></a-plane>
-
-    <a-plane position="0 2 -4"
-      width="8" height="4" color="#ded8cd"></a-plane>
-
-    <a-plane position="-4 2 0"
-      rotation="0 90 0"
-      width="8" height="4" color="#d4cec3"></a-plane>
-
-    <a-plane position="4 2 0"
-      rotation="0 -90 0"
-      width="8" height="4" color="#d4cec3"></a-plane>
-
-    <a-plane position="-2.6 2.2 -3.96"
-      width="1.6" height="1.7"
-      material="color:#fff;emissive:#fff;emissiveIntensity:0.7">
-    </a-plane>
-
-    <a-box position="0 0.72 -2.25"
-      width="2.2" height="0.12" depth="0.9"
-      color="#6f4f35"></a-box>
-
-    <a-box position="-0.85 0.35 -2.25"
-      width="0.12" height="0.7" depth="0.12"
-      color="#59402f"></a-box>
-
-    <a-box position="0.85 0.35 -2.25"
-      width="0.12" height="0.7" depth="0.12"
-      color="#59402f"></a-box>
-
-    <a-cylinder id="mug"
-      position="0.25 0.91 -2.25"
-      radius="0.11" height="0.28"
-      color="#f4f1e9"
-      vision-target pinch-grabbable>
-    </a-cylinder>
-
-    <a-box id="card"
-      position="-0.45 0.87 -2.22"
-      width="0.34" height="0.03" depth="0.24"
-      color="#111" vision-target>
-    </a-box>
-
-    <a-entity id="person"
-      position="2 0 -3"
-      vision-target>
-      <a-sphere position="0 1.65 0"
-        radius="0.2" color="#8b6f61"></a-sphere>
-      <a-cylinder position="0 0.95 0"
-        radius="0.28" height="1.15"
-        color="#42546b"></a-cylinder>
+    <!-- ROOM LIGHTING -->
+    <a-entity id="ambientLight"
+      light="type:ambient;color:#fff;intensity:0.85">
     </a-entity>
 
+    <a-entity id="sunLight"
+      position="-3 4 -1"
+      light="type:directional;color:#fff;intensity:1.1;castShadow:false">
+    </a-entity>
+
+    <a-entity id="ceilingLight"
+      position="0 2.8 -1.5"
+      light="type:point;color:#fff1d8;intensity:0;distance:7">
+    </a-entity>
+
+    <a-entity id="floorLampLight"
+      position="2.25 1.65 -2.6"
+      light="type:point;color:#ffe0a0;intensity:0;distance:4">
+    </a-entity>
+
+    <!-- FLOOR -->
+    <a-plane
+      rotation="-90 0 0"
+      width="8" height="8"
+      color="#927b65"
+      material="roughness:0.9">
+    </a-plane>
+
+    <!-- FLOORBOARD SEAMS -->
+    <a-entity id="floorboards"></a-entity>
+
+    <!-- WALLS -->
+    <a-plane
+      position="0 1.6 -4"
+      width="8" height="3.2"
+      color="#d7d0c5">
+    </a-plane>
+
+    <a-plane
+      position="-4 1.6 0"
+      rotation="0 90 0"
+      width="8" height="3.2"
+      color="#d7d0c5">
+    </a-plane>
+
+    <a-plane
+      position="4 1.6 0"
+      rotation="0 -90 0"
+      width="8" height="3.2"
+      color="#d7d0c5">
+    </a-plane>
+
+    <a-plane
+      position="0 3.2 0"
+      rotation="90 0 0"
+      width="8" height="8"
+      color="#f4f0e8">
+    </a-plane>
+
+    <!-- BASEBOARDS -->
+    <a-box position="0 0.09 -3.95"
+      width="8" height="0.18" depth="0.045"
+      color="#f4f0e8"></a-box>
+
+    <a-box position="-3.95 0.09 0"
+      width="0.045" height="0.18" depth="8"
+      color="#f4f0e8"></a-box>
+
+    <a-box position="3.95 0.09 0"
+      width="0.045" height="0.18" depth="8"
+      color="#f4f0e8"></a-box>
+
+    <!-- WINDOW -->
+    <a-entity id="window"
+      position="-1.9 1.85 -3.94">
+
+      <a-plane id="windowGlass"
+        width="2.2" height="1.5"
+        color="#8db8d0">
+      </a-plane>
+
+      <a-box position="0 0 0.035"
+        width="2.28" height="0.065"
+        depth="0.07" color="#fff9ee">
+      </a-box>
+
+      <a-box position="0 0 0.035"
+        width="0.065" height="1.57"
+        depth="0.07" color="#fff9ee">
+      </a-box>
+
+      <a-box position="-1.13 0 0.035"
+        width="0.08" height="1.6"
+        depth="0.07" color="#fff9ee">
+      </a-box>
+
+      <a-box position="1.13 0 0.035"
+        width="0.08" height="1.6"
+        depth="0.07" color="#fff9ee">
+      </a-box>
+
+      <a-box position="0 0.78 0.035"
+        width="2.34" height="0.08"
+        depth="0.09" color="#fff9ee">
+      </a-box>
+
+      <a-box position="0 -0.78 0.08"
+        width="2.45" height="0.09"
+        depth="0.2" color="#fff9ee">
+      </a-box>
+
+      <!-- CURTAINS -->
+      <a-box position="-1.27 0 0.13"
+        width="0.26" height="1.75"
+        depth="0.11" color="#a7b0a0">
+      </a-box>
+
+      <a-box position="1.27 0 0.13"
+        width="0.26" height="1.75"
+        depth="0.11" color="#a7b0a0">
+      </a-box>
+
+      <a-cylinder
+        position="0 0.95 0.17"
+        rotation="0 0 90"
+        radius="0.025" height="2.9"
+        color="#484848">
+      </a-cylinder>
+    </a-entity>
+
+    <!-- RUG -->
+    <a-plane
+      position="0 0.012 -1.7"
+      rotation="-90 0 0"
+      width="3.6" height="2.6"
+      color="#a9a79b"
+      material="roughness:1">
+    </a-plane>
+
+    <a-plane
+      position="0 0.014 -1.7"
+      rotation="-90 0 0"
+      width="3.2" height="2.2"
+      color="#bcb8a8">
+    </a-plane>
+
+    <!-- SOFA -->
+    <a-entity id="sofa"
+      position="0 0 -3.05">
+
+      <a-box position="0 0.39 0"
+        width="2.35" height="0.45"
+        depth="0.87" color="#66776e">
+      </a-box>
+
+      <a-box position="0 0.83 -0.34"
+        width="2.35" height="0.78"
+        depth="0.25" color="#596b63">
+      </a-box>
+
+      <a-box position="-1.09 0.60 0"
+        width="0.25" height="0.56"
+        depth="0.93" color="#596b63">
+      </a-box>
+
+      <a-box position="1.09 0.60 0"
+        width="0.25" height="0.56"
+        depth="0.93" color="#596b63">
+      </a-box>
+
+      <!-- SEAT CUSHIONS -->
+      <a-box position="-0.51 0.64 0.12"
+        width="0.98" height="0.13"
+        depth="0.67" color="#73857b">
+      </a-box>
+
+      <a-box position="0.51 0.64 0.12"
+        width="0.98" height="0.13"
+        depth="0.67" color="#73857b">
+      </a-box>
+
+      <!-- BACK CUSHIONS -->
+      <a-box position="-0.5 0.97 -0.23"
+        width="0.94" height="0.48"
+        depth="0.16" color="#718278">
+      </a-box>
+
+      <a-box position="0.5 0.97 -0.23"
+        width="0.94" height="0.48"
+        depth="0.16" color="#718278">
+      </a-box>
+
+      <!-- THROW PILLOWS -->
+      <a-box
+        position="-0.76 0.84 0.20"
+        rotation="0 0 15"
+        width="0.38" height="0.38"
+        depth="0.13" color="#c9a36e">
+      </a-box>
+
+      <a-box
+        position="0.78 0.85 0.20"
+        rotation="0 0 -14"
+        width="0.36" height="0.36"
+        depth="0.13" color="#d7c9b1">
+      </a-box>
+
+      <!-- THROW BLANKET -->
+      <a-box
+        position="0.68 0.73 0.38"
+        rotation="0 0 -8"
+        width="0.65" height="0.055"
+        depth="0.40" color="#bba78f">
+      </a-box>
+    </a-entity>
+
+    <!-- COFFEE TABLE -->
+    <a-entity id="coffeeTable"
+      position="0 0 -1.55">
+
+      <a-box position="0 0.44 0"
+        width="1.55" height="0.10"
+        depth="0.75" color="#77553c">
+      </a-box>
+
+      <a-box position="-0.66 0.22 -0.27"
+        width="0.09" height="0.44"
+        depth="0.09" color="#513b2c">
+      </a-box>
+
+      <a-box position="0.66 0.22 -0.27"
+        width="0.09" height="0.44"
+        depth="0.09" color="#513b2c">
+      </a-box>
+
+      <a-box position="-0.66 0.22 0.27"
+        width="0.09" height="0.44"
+        depth="0.09" color="#513b2c">
+      </a-box>
+
+      <a-box position="0.66 0.22 0.27"
+        width="0.09" height="0.44"
+        depth="0.09" color="#513b2c">
+      </a-box>
+
+      <!-- INTERACTIVE MUG -->
+      <a-entity id="mug"
+        position="0.42 0.64 -0.13"
+        vision-target pinch-grabbable>
+        <a-cylinder
+          radius="0.085" height="0.25"
+          color="#e8e2d5">
+        </a-cylinder>
+        <a-torus
+          position="0.105 0 0"
+          rotation="0 90 0"
+          radius="0.067"
+          radius-tubular="0.014"
+          color="#e8e2d5">
+        </a-torus>
+      </a-entity>
+
+      <!-- INTERACTIVE REMOTE -->
+      <a-entity id="remote"
+        position="-0.37 0.54 0.13"
+        vision-target pinch-grabbable>
+
+        <a-box
+          width="0.095" height="0.035"
+          depth="0.23"
+          color="#24272b">
+        </a-box>
+
+        <a-cylinder
+          position="0 0.022 -0.07"
+          radius="0.017" height="0.007"
+          color="#c74d4d">
+        </a-cylinder>
+
+        <a-cylinder
+          position="0 0.022 0"
+          radius="0.025" height="0.007"
+          color="#777">
+        </a-cylinder>
+      </a-entity>
+
+      <!-- BOOK -->
+      <a-entity id="book"
+        position="0 0.54 0.05"
+        vision-target pinch-grabbable>
+
+        <a-box
+          width="0.25" height="0.035"
+          depth="0.33"
+          color="#365b70">
+        </a-box>
+
+        <a-box position="0 0.019 0"
+          width="0.22" height="0.005"
+          depth="0.29"
+          color="#e8e0cb">
+        </a-box>
+      </a-entity>
+    </a-entity>
+
+    <!-- TV STAND -->
+    <a-entity position="0 0 1.15">
+
+      <a-box position="0 0.37 0"
+        width="2.1" height="0.65"
+        depth="0.43" color="#65503f">
+      </a-box>
+
+      <a-box position="0 0.71 0"
+        width="2.18" height="0.055"
+        depth="0.48" color="#49372d">
+      </a-box>
+
+      <a-box position="0 1.28 0.03"
+        width="1.72" height="1.0"
+        depth="0.075" color="#15191c">
+      </a-box>
+
+      <a-plane position="0 1.28 -0.012"
+        width="1.61" height="0.89"
+        color="#263a48">
+      </a-plane>
+
+      <a-box position="0 0.83 0.02"
+        width="0.10" height="0.18"
+        depth="0.10" color="#222">
+      </a-box>
+    </a-entity>
+
+    <!-- SIDE TABLE -->
+    <a-entity position="2.05 0 -2.65">
+      <a-cylinder position="0 0.53 0"
+        radius="0.32" height="0.07"
+        color="#795a41">
+      </a-cylinder>
+
+      <a-cylinder position="0 0.27 0"
+        radius="0.055" height="0.52"
+        color="#5a4535">
+      </a-cylinder>
+
+      <a-cylinder position="0 0.04 0"
+        radius="0.23" height="0.08"
+        color="#5a4535">
+      </a-cylinder>
+    </a-entity>
+
+    <!-- FLOOR LAMP -->
+    <a-entity id="lamp"
+      position="2.55 0 -3.25">
+
+      <a-cylinder
+        position="0 0.045 0"
+        radius="0.21" height="0.09"
+        color="#353a3e">
+      </a-cylinder>
+
+      <a-cylinder
+        position="0 0.85 0"
+        radius="0.025" height="1.65"
+        color="#353a3e">
+      </a-cylinder>
+
+      <a-cone id="lampShade"
+        position="0 1.76 0"
+        radius-bottom="0.31"
+        radius-top="0.17"
+        height="0.43"
+        color="#d9c9ad">
+      </a-cone>
+    </a-entity>
+
+    <!-- BOOKSHELF -->
+    <a-entity position="3.35 0 -1.4"
+      rotation="0 -90 0">
+
+      <a-box position="-0.6 1.0 0"
+        width="0.10" height="2"
+        depth="0.43" color="#74543e">
+      </a-box>
+
+      <a-box position="0.6 1.0 0"
+        width="0.10" height="2"
+        depth="0.43" color="#74543e">
+      </a-box>
+
+      <a-box position="0 0.13 0"
+        width="1.3" height="0.07"
+        depth="0.43" color="#74543e">
+      </a-box>
+
+      <a-box position="0 0.75 0"
+        width="1.3" height="0.07"
+        depth="0.43" color="#74543e">
+      </a-box>
+
+      <a-box position="0 1.37 0"
+        width="1.3" height="0.07"
+        depth="0.43" color="#74543e">
+      </a-box>
+
+      <a-box position="0 1.96 0"
+        width="1.3" height="0.07"
+        depth="0.43" color="#74543e">
+      </a-box>
+
+      <a-entity id="shelfBooks"></a-entity>
+    </a-entity>
+
+    <!-- PLANT -->
+    <a-entity position="-2.9 0 -2.9">
+
+      <a-cylinder position="0 0.22 0"
+        radius-bottom="0.22"
+        radius-top="0.29"
+        height="0.44"
+        color="#b17a58">
+      </a-cylinder>
+
+      <a-cylinder position="0 0.78 0"
+        radius="0.025" height="0.9"
+        color="#506b39">
+      </a-cylinder>
+
+      <a-sphere position="-0.22 1.0 0"
+        scale="0.36 0.18 0.20"
+        color="#547c49">
+      </a-sphere>
+
+      <a-sphere position="0.24 1.12 0"
+        scale="0.36 0.18 0.20"
+        color="#416c40">
+      </a-sphere>
+
+      <a-sphere position="0 1.36 0"
+        scale="0.25 0.35 0.22"
+        color="#64884d">
+      </a-sphere>
+    </a-entity>
+
+    <!-- WALL ART -->
+    <a-entity position="1.85 2.15 -3.92">
+      <a-box width="1.05" height="0.72"
+        depth="0.045" color="#5e4a3c">
+      </a-box>
+      <a-plane position="0 0 0.03"
+        width="0.94" height="0.61"
+        color="#c2c8b5">
+      </a-plane>
+      <a-circle position="-0.20 0.13 0.035"
+        radius="0.15" color="#d7ad7b">
+      </a-circle>
+      <a-triangle
+        vertex-a="-0.44 -0.27 0.04"
+        vertex-b="0.12 0.19 0.04"
+        vertex-c="0.42 -0.27 0.04"
+        color="#758b79">
+      </a-triangle>
+    </a-entity>
+
+    <!-- EXISTING MOVING PERSON -->
+    <a-entity id="person"
+      position="2 0 -0.4"
+      vision-target>
+
+      <a-sphere position="0 1.65 0"
+        radius="0.19" color="#987c68">
+      </a-sphere>
+
+      <a-cylinder position="0 1.02 0"
+        radius="0.26" height="1.05"
+        color="#405b72">
+      </a-cylinder>
+
+      <a-cylinder position="-0.13 0.32 0"
+        radius="0.095" height="0.62"
+        color="#333c47">
+      </a-cylinder>
+
+      <a-cylinder position="0.13 0.32 0"
+        radius="0.095" height="0.62"
+        color="#333c47">
+      </a-cylinder>
+    </a-entity>
+
+    <!-- EXISTING GRABBABLE CUBE -->
     <a-box id="near"
-      position="-0.35 1.25 -0.55"
-      width="0.16" height="0.16" depth="0.16"
+      position="-0.4 1.2 -0.65"
+      width="0.15" height="0.15" depth="0.15"
       color="#e9d84b"
       vision-target pinch-grabbable>
     </a-box>
+
   </a-entity>
 
-  <!-- SOUND PANEL: VR ONLY -->
-  <a-entity id="buttonStation" position="0.65 1.37 -0.95">
-    <a-box width="0.70" height="0.49"
-      depth="0.055" color="#293443"></a-box>
-
-    <a-text value="TOUCH A BUTTON"
-      align="center" width="0.65"
-      position="0 0.195 0.034"
-      color="#fff"></a-text>
-
-    <a-box class="sound-button" sound-key="index:0"
-      position="-0.21 0.065 0.048"
-      width="0.145" height="0.115" depth="0.04"
-      color="#d45b55"></a-box>
-
-    <a-box class="sound-button" sound-key="index:1"
-      position="0 0.065 0.048"
-      width="0.145" height="0.115" depth="0.04"
-      color="#e0aa43"></a-box>
-
-    <a-box class="sound-button" sound-key="index:2"
-      position="0.21 0.065 0.048"
-      width="0.145" height="0.115" depth="0.04"
-      color="#60b77c"></a-box>
-
-    <a-box class="sound-button" sound-key="index:3"
-      position="-0.21 -0.095 0.048"
-      width="0.145" height="0.115" depth="0.04"
-      color="#5b9bd5"></a-box>
-
-    <a-box class="sound-button" sound-key="index:4"
-      position="0 -0.095 0.048"
-      width="0.145" height="0.115" depth="0.04"
-      color="#9c75d5"></a-box>
-
-    <a-box class="sound-button" sound-key="index:5"
-      position="0.21 -0.095 0.048"
-      width="0.145" height="0.115" depth="0.04"
-      color="#d979b4"></a-box>
-
-    <a-text id="buttonFeedback"
-      value="Touch a button"
-      align="center" width="0.65"
-      position="0 -0.207 0.035"
-      color="#fff"></a-text>
-  </a-entity>
-
-  <!-- WRIST PANEL: VR AND AR -->
+  <!-- WRIST PANEL -->
   <a-entity id="wristPanel"
     visible="false"
     scale="0.45 0.45 0.45">
 
     <a-box id="wristBackground"
-      width="0.44" height="0.60"
-      depth="0.018" color="#172c3a"
+      width="0.44" height="0.79"
+      depth="0.018"
+      color="#172c3a"
       material="opacity:0.96;transparent:true">
     </a-box>
 
-    <a-text value="VISION CONTROLS"
-      position="0 0.253 0.014"
+    <a-text
+      value="VISION CONTROLS"
+      position="0 0.355 0.015"
       align="center" width="0.42"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
+    <!-- DISTANCE -->
     <a-text id="vrDistance"
       value="Distance: 0.5 m"
-      position="0 0.193 0.014"
+      position="0 0.294 0.015"
       align="center" width="0.40"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
     <a-box class="touch-control"
       data-action="distanceDown"
-      position="-0.105 0.139 0.025"
-      width="0.16" height="0.07" depth="0.025"
-      color="#477bba"></a-box>
+      position="-0.105 0.240 0.025"
+      width="0.16" height="0.07"
+      depth="0.025" color="#477bba">
+    </a-box>
 
     <a-text value="- 0.1m"
-      position="-0.105 0.130 0.042"
+      position="-0.105 0.231 0.043"
       align="center" width="0.33"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
     <a-box class="touch-control"
       data-action="distanceUp"
-      position="0.105 0.139 0.025"
-      width="0.16" height="0.07" depth="0.025"
-      color="#477bba"></a-box>
+      position="0.105 0.240 0.025"
+      width="0.16" height="0.07"
+      depth="0.025" color="#477bba">
+    </a-box>
 
     <a-text value="+ 0.1m"
-      position="0.105 0.130 0.042"
+      position="0.105 0.231 0.043"
       align="center" width="0.33"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
+    <!-- FIELD -->
     <a-text id="vrField"
       value="Peripheral field: 100%"
-      position="0 0.067 0.014"
+      position="0 0.165 0.015"
       align="center" width="0.40"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
     <a-box class="touch-control"
       data-action="fieldDown"
-      position="-0.105 0.010 0.025"
-      width="0.16" height="0.07" depth="0.025"
-      color="#477bba"></a-box>
+      position="-0.105 0.108 0.025"
+      width="0.16" height="0.07"
+      depth="0.025" color="#477bba">
+    </a-box>
 
     <a-text value="Field -"
-      position="-0.105 0.001 0.042"
+      position="-0.105 0.099 0.043"
       align="center" width="0.33"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
     <a-box class="touch-control"
       data-action="fieldUp"
-      position="0.105 0.010 0.025"
-      width="0.16" height="0.07" depth="0.025"
-      color="#477bba"></a-box>
+      position="0.105 0.108 0.025"
+      width="0.16" height="0.07"
+      depth="0.025" color="#477bba">
+    </a-box>
 
     <a-text value="Field +"
-      position="0.105 0.001 0.042"
+      position="0.105 0.099 0.043"
       align="center" width="0.33"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
+    <!-- GLARE -->
     <a-box class="touch-control"
       data-action="glare"
-      position="0 -0.080 0.025"
-      width="0.36" height="0.065" depth="0.025"
-      color="#536b78"></a-box>
+      position="0 0.010 0.025"
+      width="0.36" height="0.065"
+      depth="0.025" color="#536b78">
+    </a-box>
 
     <a-text id="vrGlare"
       value="Glare: OFF"
-      position="0 -0.089 0.042"
+      position="0 0.001 0.043"
       align="center" width="0.39"
-      color="#fff"></a-text>
+      color="#fff">
+    </a-text>
 
-    <!-- MOVING PERSON: VR ONLY -->
+    <!-- VR MOVEMENT CONTROL -->
     <a-entity id="wristMotionGroup">
       <a-box class="touch-control"
         data-action="motion"
-        position="0 -0.161 0.025"
-        width="0.36" height="0.065" depth="0.025"
-        color="#536b78"></a-box>
+        position="0 -0.073 0.025"
+        width="0.36" height="0.065"
+        depth="0.025" color="#536b78">
+      </a-box>
 
       <a-text id="vrMotion"
         value="Moving person: ON"
-        position="0 -0.170 0.042"
+        position="0 -0.082 0.043"
         align="center" width="0.39"
-        color="#fff"></a-text>
+        color="#fff">
+      </a-text>
     </a-entity>
 
-    <!-- SIMULATION TOGGLE -->
+    <!-- LIGHTING PRESETS: VR ONLY -->
+    <a-entity id="wristLightingGroup">
+
+      <a-text value="ROOM LIGHTING"
+        position="0 -0.146 0.015"
+        align="center" width="0.39"
+        color="#fff">
+      </a-text>
+
+      <a-box class="touch-control"
+        data-action="morning"
+        position="-0.105 -0.202 0.025"
+        width="0.16" height="0.065"
+        depth="0.025" color="#a47748">
+      </a-box>
+
+      <a-text value="Morning"
+        position="-0.105 -0.211 0.043"
+        align="center" width="0.32"
+        color="#fff">
+      </a-text>
+
+      <a-box class="touch-control"
+        data-action="day"
+        position="0.105 -0.202 0.025"
+        width="0.16" height="0.065"
+        depth="0.025" color="#467fa9">
+      </a-box>
+
+      <a-text value="Day"
+        position="0.105 -0.211 0.043"
+        align="center" width="0.32"
+        color="#fff">
+      </a-text>
+
+      <a-box class="touch-control"
+        data-action="dusk"
+        position="-0.105 -0.281 0.025"
+        width="0.16" height="0.065"
+        depth="0.025" color="#98647d">
+      </a-box>
+
+      <a-text value="Dusk"
+        position="-0.105 -0.290 0.043"
+        align="center" width="0.32"
+        color="#fff">
+      </a-text>
+
+      <a-box class="touch-control"
+        data-action="night"
+        position="0.105 -0.281 0.025"
+        width="0.16" height="0.065"
+        depth="0.025" color="#34445e">
+      </a-box>
+
+      <a-text value="Night"
+        position="0.105 -0.290 0.043"
+        align="center" width="0.32"
+        color="#fff">
+      </a-text>
+    </a-entity>
+
+    <!-- SIMULATION -->
     <a-entity id="wristSimulationGroup">
       <a-box class="touch-control"
         data-action="simulation"
-        position="0 -0.244 0.025"
-        width="0.36" height="0.065" depth="0.025"
-        color="#a34e4e"></a-box>
+        position="0 -0.362 0.025"
+        width="0.36" height="0.065"
+        depth="0.025" color="#a34e4e">
+      </a-box>
 
       <a-text id="vrSimulation"
         value="SIMULATION OFF"
-        position="0 -0.253 0.042"
+        position="0 -0.371 0.043"
         align="center" width="0.39"
-        color="#fff"></a-text>
+        color="#fff">
+      </a-text>
     </a-entity>
+
   </a-entity>
 
   <!-- HAND TRACKING -->
@@ -344,11 +835,12 @@
     hand-tracking-controls="hand:right;modelStyle:mesh">
   </a-entity>
 
-  <!-- VISION OVERLAYS -->
+  <!-- CAMERA AND VISION EFFECTS -->
   <a-entity id="rig">
     <a-camera id="cam"
       position="0 1.6 0"
-      look-controls wasd-controls>
+      look-controls
+      wasd-controls>
 
       <a-plane id="fieldOverlay"
         position="0 0 -0.48"
@@ -373,147 +865,378 @@
         material="shader:flat;color:#222;transparent:true;opacity:0.48"
         position="0.18 0.11 -0.43">
       </a-entity>
+
     </a-camera>
   </a-entity>
+
 </a-scene>
 
 <script>
-const $ = s => document.querySelector(s);
+const $ = selector => document.querySelector(selector);
 const scene = $('a-scene');
 
 let simOn = true;
 let useful = 0.5;
 let fieldPercent = 100;
+let lightingMode = 'day';
 
-/* DISTANCE SIMULATION */
-AFRAME.registerComponent('vision-target', {
-  tick: function() {
-    const cam = $('#cam').object3D;
-    const a = new THREE.Vector3();
-    const b = new THREE.Vector3();
+/* PROCEDURAL ROOM DETAILS */
 
-    cam.getWorldPosition(a);
-    this.el.object3D.getWorldPosition(b);
+function addBox(parent, position, size, color) {
+  const el = document.createElement('a-box');
 
-    const excess = Math.max(0, a.distanceTo(b) - useful);
-    const opacity = simOn
-      ? Math.max(0.12, 1 - excess / 2.5)
-      : 1;
+  el.setAttribute('position',position.join(' '));
+  el.setAttribute('width',size[0]);
+  el.setAttribute('height',size[1]);
+  el.setAttribute('depth',size[2]);
+  el.setAttribute('color',color);
 
-    this.el.object3D.traverse(o => {
-      if (o.material) {
-        o.material.transparent = true;
-        o.material.opacity = opacity;
+  parent.appendChild(el);
+  return el;
+}
+
+function buildRoomDetails() {
+  const floor = $('#floorboards');
+
+  for (let x=-3.8;x<4;x+=0.4) {
+    addBox(
+      floor,
+      [x,0.008,0],
+      [0.008,0.004,8],
+      '#75614f'
+    );
+  }
+
+  const shelf = $('#shelfBooks');
+  const colors = [
+    '#8a594c','#486a76','#b1a078',
+    '#586b52','#7d6481','#b57a53'
+  ];
+
+  for (let row=0;row<3;row++) {
+    for (let i=0;i<9;i++) {
+      const height=0.22+(i%3)*0.045;
+
+      addBox(
+        shelf,
+        [-0.48+i*0.115,
+          0.19+row*0.62+height/2,
+          0],
+        [0.085,height,0.29],
+        colors[(i+row)%colors.length]
+      );
+    }
+  }
+}
+
+/* LIGHTING PRESETS */
+
+const lightingPresets = {
+  morning:{
+    ambient:0.48,
+    ambientColor:'#ffe2c0',
+    sun:1.25,
+    sunColor:'#ffbb79',
+    sunPosition:'-3 2 -1',
+    ceiling:0,
+    lamp:0,
+    window:'#edb875',
+    background:'#e5b993',
+    shade:'#ddc39c'
+  },
+
+  day:{
+    ambient:0.85,
+    ambientColor:'#ffffff',
+    sun:1.1,
+    sunColor:'#ffffff',
+    sunPosition:'-2 5 -2',
+    ceiling:0,
+    lamp:0,
+    window:'#8db8d0',
+    background:'#b8cbd5',
+    shade:'#d9c9ad'
+  },
+
+  dusk:{
+    ambient:0.24,
+    ambientColor:'#b7b5d4',
+    sun:0.42,
+    sunColor:'#ff9865',
+    sunPosition:'-3 1 -1',
+    ceiling:0,
+    lamp:0.25,
+    window:'#aa7590',
+    background:'#806f90',
+    shade:'#e1b984'
+  },
+
+  night:{
+    ambient:0.10,
+    ambientColor:'#9aaccd',
+    sun:0.03,
+    sunColor:'#a4b8de',
+    sunPosition:'-2 4 -2',
+    ceiling:0.28,
+    lamp:1.15,
+    window:'#17243c',
+    background:'#111a2b',
+    shade:'#ffe0a0'
+  }
+};
+
+function setLighting(mode) {
+  if (!lightingPresets[mode]) return;
+
+  lightingMode=mode;
+  const p=lightingPresets[mode];
+
+  $('#ambientLight').setAttribute(
+    'light',{
+      type:'ambient',
+      color:p.ambientColor,
+      intensity:p.ambient
+    }
+  );
+
+  $('#sunLight').setAttribute(
+    'light',{
+      type:'directional',
+      color:p.sunColor,
+      intensity:p.sun,
+      castShadow:false
+    }
+  );
+
+  $('#sunLight').setAttribute(
+    'position',p.sunPosition
+  );
+
+  $('#ceilingLight').setAttribute(
+    'light','intensity',p.ceiling
+  );
+
+  $('#floorLampLight').setAttribute(
+    'light','intensity',p.lamp
+  );
+
+  $('#windowGlass').setAttribute(
+    'color',p.window
+  );
+
+  $('#lampShade').setAttribute(
+    'color',p.shade
+  );
+
+  if (!scene.is('ar-mode')) {
+    scene.setAttribute(
+      'background','color',p.background
+    );
+  }
+
+  $('#lightingStatus').textContent =
+    'Lighting: '+mode.charAt(0).toUpperCase()+
+    mode.slice(1);
+}
+
+/* DISTANCE EFFECT */
+
+AFRAME.registerComponent('vision-target',{
+  init:function() {
+    this.cameraPosition=new THREE.Vector3();
+    this.objectPosition=new THREE.Vector3();
+    this.originalMaterials=new Map();
+
+    this.el.object3D.traverse(o=>{
+      if (!o.material) return;
+
+      const materials=Array.isArray(o.material)
+        ?o.material:[o.material];
+
+      for (const m of materials) {
+        if (!this.originalMaterials.has(m)) {
+          this.originalMaterials.set(m,{
+            opacity:m.opacity,
+            transparent:m.transparent
+          });
+        }
+      }
+    });
+  },
+
+  tick:function() {
+    $('#cam').object3D.getWorldPosition(
+      this.cameraPosition
+    );
+
+    this.el.object3D.getWorldPosition(
+      this.objectPosition
+    );
+
+    const distance=this.cameraPosition.distanceTo(
+      this.objectPosition
+    );
+
+    const excess=Math.max(0,distance-useful);
+    const factor=simOn
+      ?Math.max(0.12,1-excess/2.5)
+      :1;
+
+    this.el.object3D.traverse(o=>{
+      if (!o.material) return;
+
+      const materials=Array.isArray(o.material)
+        ?o.material:[o.material];
+
+      for (const m of materials) {
+        if (!this.originalMaterials.has(m)) {
+          this.originalMaterials.set(m,{
+            opacity:m.opacity,
+            transparent:m.transparent
+          });
+        }
+
+        const original=this.originalMaterials.get(m);
+        m.transparent=true;
+        m.opacity=original.opacity*factor;
       }
     });
   }
 });
 
-/* PERIPHERAL FIELD SHADER */
-AFRAME.registerComponent('peripheral-field', {
-  init: function() {
-    this.material = new THREE.ShaderMaterial({
+/* PERIPHERAL FIELD */
+
+AFRAME.registerComponent('peripheral-field',{
+  init:function() {
+    this.material=new THREE.ShaderMaterial({
       transparent:true,
       depthTest:false,
       depthWrite:false,
-      uniforms:{radius:{value:1.5}},
+      uniforms:{
+        radius:{value:1.5}
+      },
+
       vertexShader:`
         varying vec2 vUv;
+
         void main() {
           vUv=uv;
-          gl_Position=projectionMatrix*
-            modelViewMatrix*vec4(position,1.0);
+          gl_Position=
+            projectionMatrix*
+            modelViewMatrix*
+            vec4(position,1.0);
         }
       `,
+
       fragmentShader:`
         uniform float radius;
         varying vec2 vUv;
+
         void main() {
           vec2 p=(vUv-vec2(0.5))*2.0;
           float r=length(p);
+
           float opacity=
-            smoothstep(radius-0.10,radius+0.12,r)*0.96;
-          gl_FragColor=vec4(0.0,0.0,0.0,opacity);
+            smoothstep(
+              radius-0.10,
+              radius+0.12,
+              r
+            )*0.96;
+
+          gl_FragColor=
+            vec4(0.0,0.0,0.0,opacity);
         }
       `
     });
 
-    const install = () => {
-      const mesh = this.el.getObject3D('mesh');
+    const install=()=>{
+      const mesh=this.el.getObject3D('mesh');
       if (!mesh) return;
-      mesh.material = this.material;
-      mesh.renderOrder = 999;
-      mesh.frustumCulled = false;
+
+      mesh.material=this.material;
+      mesh.renderOrder=999;
+      mesh.frustumCulled=false;
     };
 
     this.el.addEventListener('object3dset',install);
     install();
   },
-  tick: function() {
-    this.material.uniforms.radius.value =
-      !simOn || fieldPercent === 100
-      ? 1.5
-      : 0.12 + 0.95*(fieldPercent-20)/80;
+
+  tick:function() {
+    this.material.uniforms.radius.value=
+      !simOn || fieldPercent===100
+      ?1.5
+      :0.12+0.95*(fieldPercent-20)/80;
   },
-  remove: function() {
+
+  remove:function() {
     this.material.dispose();
   }
 });
 
 /* SETTINGS */
+
 function syncSettings() {
-  $('#field').value = fieldPercent;
-  $('#fieldVal').textContent = fieldPercent+'%';
+  $('#field').value=fieldPercent;
+  $('#fieldVal').textContent=fieldPercent+'%';
 
   $('#vrField').setAttribute(
-    'value','Peripheral field: '+fieldPercent+'%'
+    'value',
+    'Peripheral field: '+fieldPercent+'%'
   );
 
-  $('#dist').value = useful.toFixed(1);
-  $('#distVal').textContent = useful.toFixed(1)+' m';
+  $('#dist').value=useful.toFixed(1);
+  $('#distVal').textContent=useful.toFixed(1)+' m';
 
   $('#vrDistance').setAttribute(
-    'value','Distance: '+useful.toFixed(1)+' m'
+    'value',
+    'Distance: '+useful.toFixed(1)+' m'
   );
 
   $('#vrGlare').setAttribute(
-    'value','Glare: '+(
-      $('#glare').checked ? 'ON' : 'OFF'
+    'value',
+    'Glare: '+(
+      $('#glare').checked?'ON':'OFF'
     )
   );
 
   $('#vrMotion').setAttribute(
-    'value','Moving person: '+(
-      $('#motion').checked ? 'ON' : 'OFF'
+    'value',
+    'Moving person: '+(
+      $('#motion').checked?'ON':'OFF'
     )
   );
 
   $('#vrSimulation').setAttribute(
     'value',
-    simOn ? 'SIMULATION OFF' : 'SIMULATION ON'
+    simOn?'SIMULATION OFF':'SIMULATION ON'
   );
 
-  $('#toggle').textContent =
-    simOn ? 'Simulation OFF' : 'Simulation ON';
+  $('#toggle').textContent=
+    simOn?'Simulation OFF':'Simulation ON';
 
-  $('#status').textContent =
-    simOn ? 'SIMULATION ON' : 'SIMULATION OFF';
+  $('#status').textContent=
+    simOn?'SIMULATION ON':'SIMULATION OFF';
 
   $('#scotoma1').setAttribute('visible',simOn);
   $('#scotoma2').setAttribute('visible',simOn);
 
   $('#glareOverlay').setAttribute(
     'material','opacity',
-    simOn && $('#glare').checked ? 0.62 : 0
+    simOn && $('#glare').checked?0.62:0
   );
 }
 
 function applyAction(action) {
   if (action==='distanceDown')
-    useful=Math.max(0.3,Math.round((useful-0.1)*10)/10);
+    useful=Math.max(
+      0.3,Math.round((useful-0.1)*10)/10
+    );
 
   if (action==='distanceUp')
-    useful=Math.min(2,Math.round((useful+0.1)*10)/10);
+    useful=Math.min(
+      2,Math.round((useful+0.1)*10)/10
+    );
 
   if (action==='fieldDown')
     fieldPercent=Math.max(20,fieldPercent-5);
@@ -530,81 +1253,99 @@ function applyAction(action) {
   if (action==='simulation')
     simOn=!simOn;
 
+  if (lightingPresets[action] &&
+      !scene.is('ar-mode')) {
+    setLighting(action);
+  }
+
   syncSettings();
 }
 
-/* WRIST POSITION TRACKING */
-AFRAME.registerComponent('wrist-follow', {
+/* WRIST TRACKING WITH 2 SECOND GRACE PERIOD */
+
+AFRAME.registerComponent('wrist-follow',{
   init:function() {
     this.wrist=new THREE.Vector3();
-    this.cameraPosition=new THREE.Vector3();
     this.cameraRotation=new THREE.Quaternion();
     this.offset=new THREE.Vector3();
+    this.lastTracked=0;
+    this.hasTracked=false;
   },
 
-  tick:function() {
+  tick:function(time) {
     const panel=$('#wristPanel');
 
-    if (!scene.is('vr-mode') && !scene.is('ar-mode')) {
+    if (!scene.is('vr-mode') &&
+        !scene.is('ar-mode')) {
       panel.object3D.visible=false;
+      this.hasTracked=false;
       return;
     }
 
-    const xr=scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer?.xr;
     if (!xr) return;
 
     const hand=xr.getHand(0);
-    const wrist=hand && hand.joints && hand.joints['wrist'];
+    const wrist=hand?.joints?.['wrist'];
 
-    if (!wrist || !wrist.visible) {
-      panel.object3D.visible=false;
-      return;
+    if (wrist?.visible) {
+      wrist.getWorldPosition(this.wrist);
+
+      $('#cam').object3D.getWorldQuaternion(
+        this.cameraRotation
+      );
+
+      this.offset.set(0,0.19,0.06);
+      this.offset.applyQuaternion(
+        this.cameraRotation
+      );
+
+      panel.object3D.position.copy(this.wrist)
+        .add(this.offset);
+
+      panel.object3D.quaternion.copy(
+        this.cameraRotation
+      );
+
+      panel.object3D.visible=true;
+      this.lastTracked=time;
+      this.hasTracked=true;
+
+    } else {
+      const elapsed=time-this.lastTracked;
+
+      panel.object3D.visible=
+        this.hasTracked && elapsed<2000;
     }
-
-    wrist.getWorldPosition(this.wrist);
-
-    const camera=$('#cam').object3D;
-    camera.getWorldPosition(this.cameraPosition);
-    camera.getWorldQuaternion(this.cameraRotation);
-
-    this.offset.set(0,0.19,0.06);
-    this.offset.applyQuaternion(this.cameraRotation);
-
-    panel.object3D.position.copy(this.wrist).add(this.offset);
-    panel.object3D.quaternion.copy(this.cameraRotation);
-    panel.object3D.visible=true;
   }
 });
 
-/* FINGERTIP BUTTON DETECTION */
-AFRAME.registerComponent('finger-button-touch', {
+/* WRIST FINGERTIP INTERACTION */
+
+AFRAME.registerComponent('finger-button-touch',{
   init:function() {
     this.tip=new THREE.Vector3();
     this.local=new THREE.Vector3();
+    this.buttonPosition=new THREE.Vector3();
     this.lastContact='';
-
-    document.querySelectorAll('.touch-control').forEach(el=>{
-      el.addEventListener('click',()=>{
-        if (!el.closest('[visible="false"]'))
-          applyAction(el.dataset.action);
-      });
-    });
+    this.controls=[
+      ...document.querySelectorAll('.touch-control')
+    ];
   },
 
   tick:function() {
-    if (!scene.is('vr-mode') && !scene.is('ar-mode'))
-      return;
+    if (!scene.is('vr-mode') &&
+        !scene.is('ar-mode')) return;
 
-    const xr=scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer?.xr;
     if (!xr) return;
 
     const right=xr.getHand(1);
-    const tip=right && right.joints &&
-      right.joints['index-finger-tip'];
-
+    const tip=right?.joints?.['index-finger-tip'];
     const panel=$('#wristPanel');
 
-    if (!tip || !tip.visible || !panel.object3D.visible) {
+    if (!tip?.visible ||
+        !panel.object3D.visible) {
       this.lastContact='';
       return;
     }
@@ -619,25 +1360,42 @@ AFRAME.registerComponent('finger-button-touch', {
 
     let touched='';
 
-    if (this.local.z>0.005 && this.local.z<0.10) {
-      const controls=[
-        ...document.querySelectorAll('.touch-control')
-      ];
+    // Coordinates are converted into panel-local space,
+    // accounting for the 45% wrist-panel scale.
+    if (this.local.z>0.005 &&
+        this.local.z<0.14) {
 
-      for (const el of controls) {
-        if (!el.object3D.visible ||
-            !el.parentElement.object3D.visible)
-          continue;
+      for (const el of this.controls) {
+        // Skip controls inside hidden VR-only groups.
+        let parent=el.parentElement;
+        let hidden=false;
 
-        const p=new THREE.Vector3();
-        el.object3D.getWorldPosition(p);
-        panelObject.worldToLocal(p);
+        while (parent && parent!==panel) {
+          if (parent.object3D &&
+              !parent.object3D.visible) {
+            hidden=true;
+            break;
+          }
+          parent=parent.parentElement;
+        }
+
+        if (hidden) continue;
+
+        el.object3D.getWorldPosition(
+          this.buttonPosition
+        );
+
+        panelObject.worldToLocal(
+          this.buttonPosition
+        );
 
         const g=el.getAttribute('geometry');
 
         if (
-          Math.abs(this.local.x-p.x)<g.width/2 &&
-          Math.abs(this.local.y-p.y)<g.height/2
+          Math.abs(this.local.x-
+            this.buttonPosition.x)<g.width/2 &&
+          Math.abs(this.local.y-
+            this.buttonPosition.y)<g.height/2
         ) {
           touched=el.dataset.action;
           break;
@@ -645,147 +1403,29 @@ AFRAME.registerComponent('finger-button-touch', {
       }
     }
 
-    if (touched && touched!==this.lastContact)
+    if (touched && touched!==this.lastContact) {
       applyAction(touched);
+    }
 
     this.lastContact=touched;
   }
 });
 
-/* SOUND BUTTONS */
-const frequencies=[
-  261.63,293.66,329.63,349.23,392,440
-];
+/* GRABBABLE OBJECTS */
 
-let audioContext=null;
-
-function playTone(index) {
-  try {
-    const AudioCtx=
-      window.AudioContext||window.webkitAudioContext;
-
-    if (!AudioCtx) return;
-    if (!audioContext) audioContext=new AudioCtx();
-
-    if (audioContext.state==='suspended')
-      audioContext.resume().catch(()=>{});
-
-    const oscillator=audioContext.createOscillator();
-    const gain=audioContext.createGain();
-    const now=audioContext.currentTime;
-
-    oscillator.type='sine';
-    oscillator.frequency.value=frequencies[index];
-
-    gain.gain.setValueAtTime(0.0001,now);
-    gain.gain.exponentialRampToValueAtTime(0.14,now+0.018);
-    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.35);
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-
-    oscillator.start(now);
-    oscillator.stop(now+0.37);
-  } catch(e) {
-    console.warn(e);
-  }
-}
-
-AFRAME.registerComponent('sound-key', {
-  schema:{index:{type:'int'}},
-  init:function() {
-    this.baseColor=this.el.getAttribute('color');
-    this.cooldown=0;
-    this.el.addEventListener('click',()=>this.activate());
-  },
-  activate:function() {
-    if (performance.now()<this.cooldown) return;
-
-    this.cooldown=performance.now()+300;
-    playTone(this.data.index);
-    this.el.setAttribute('color','#fff');
-
-    $('#buttonFeedback').setAttribute(
-      'value','Button '+(this.data.index+1)
-    );
-
-    setTimeout(()=>
-      this.el.setAttribute('color',this.baseColor),180
-    );
-  }
-});
-
-/* SOUND TOUCH: VR ONLY */
-AFRAME.registerComponent('sound-touch', {
-  init:function() {
-    this.tip=new THREE.Vector3();
-    this.local=new THREE.Vector3();
-    this.contact={left:'',right:''};
-  },
-
-  tick:function() {
-    if (!scene.is('vr-mode') || scene.is('ar-mode'))
-      return;
-
-    const xr=scene.renderer && scene.renderer.xr;
-    if (!xr) return;
-
-    const station=$('#buttonStation').object3D;
-    station.updateWorldMatrix(true,false);
-
-    for (let i=0;i<2;i++) {
-      const key=i===0?'left':'right';
-      const hand=xr.getHand(i);
-      const joint=hand && hand.joints &&
-        hand.joints['index-finger-tip'];
-
-      if (!joint || !joint.visible) {
-        this.contact[key]='';
-        continue;
-      }
-
-      joint.getWorldPosition(this.tip);
-      this.local.copy(this.tip);
-      station.worldToLocal(this.local);
-
-      let touched='';
-
-      if (this.local.z>0.012 && this.local.z<0.125) {
-        const buttons=[
-          ...document.querySelectorAll('.sound-button')
-        ];
-
-        for (let j=0;j<buttons.length;j++) {
-          const p=buttons[j].object3D.position;
-          const g=buttons[j].getAttribute('geometry');
-
-          if (
-            Math.abs(this.local.x-p.x)<g.width/2 &&
-            Math.abs(this.local.y-p.y)<g.height/2
-          ) {
-            touched=String(j);
-            if (touched!==this.contact[key])
-              buttons[j].components['sound-key'].activate();
-            break;
-          }
-        }
-      }
-
-      this.contact[key]=touched;
-    }
-  }
-});
-
-/* PINCH-TO-GRAB: VR ONLY */
 AFRAME.registerComponent('pinch-grabbable',{});
 
-AFRAME.registerComponent('pinch-grab-manager', {
+AFRAME.registerComponent('pinch-grab-manager',{
   init:function() {
     this.objects=[
-      ...document.querySelectorAll('[pinch-grabbable]')
+      ...document.querySelectorAll(
+        '[pinch-grabbable]'
+      )
     ];
+
     this.holds={left:null,right:null};
     this.wasPinching={left:false,right:false};
+
     this.tip=new THREE.Vector3();
     this.thumb=new THREE.Vector3();
     this.center=new THREE.Vector3();
@@ -804,7 +1444,8 @@ AFRAME.registerComponent('pinch-grab-manager', {
   },
 
   tick:function() {
-    if (!scene.is('vr-mode') || scene.is('ar-mode')) {
+    if (!scene.is('vr-mode') ||
+        scene.is('ar-mode')) {
       this.release('left');
       this.release('right');
       this.wasPinching.left=false;
@@ -812,19 +1453,21 @@ AFRAME.registerComponent('pinch-grab-manager', {
       return;
     }
 
-    const xr=scene.renderer && scene.renderer.xr;
+    const xr=scene.renderer?.xr;
     if (!xr) return;
 
     for (let i=0;i<2;i++) {
       const key=i===0?'left':'right';
       const hand=xr.getHand(i);
-      const index=hand && hand.joints &&
-        hand.joints['index-finger-tip'];
-      const thumb=hand && hand.joints &&
-        hand.joints['thumb-tip'];
 
-      if (!index || !thumb ||
-          !index.visible || !thumb.visible) {
+      const index=
+        hand?.joints?.['index-finger-tip'];
+
+      const thumb=
+        hand?.joints?.['thumb-tip'];
+
+      if (!index?.visible ||
+          !thumb?.visible) {
         this.release(key);
         this.wasPinching[key]=false;
         continue;
@@ -834,9 +1477,12 @@ AFRAME.registerComponent('pinch-grab-manager', {
       thumb.getWorldPosition(this.thumb);
 
       this.center.copy(this.tip)
-        .add(this.thumb).multiplyScalar(0.5);
+        .add(this.thumb)
+        .multiplyScalar(0.5);
 
-      const separation=this.tip.distanceTo(this.thumb);
+      const separation=
+        this.tip.distanceTo(this.thumb);
+
       const pinching=separation<0.035;
       const released=separation>0.055;
 
@@ -849,13 +1495,22 @@ AFRAME.registerComponent('pinch-grab-manager', {
           continue;
         }
 
-        this.world.copy(this.center).add(hold.offset);
+        this.world.copy(this.center)
+          .add(hold.offset);
+
         this.local.copy(this.world);
 
-        hold.el.object3D.parent.worldToLocal(this.local);
-        hold.el.object3D.position.copy(this.local);
+        hold.el.object3D.parent
+          .worldToLocal(this.local);
 
-      } else if (pinching && !this.wasPinching[key]) {
+        hold.el.object3D.position.copy(
+          this.local
+        );
+
+      } else if (
+        pinching &&
+        !this.wasPinching[key]
+      ) {
         let nearest=null;
         let nearestDistance=0.18;
 
@@ -865,24 +1520,34 @@ AFRAME.registerComponent('pinch-grab-manager', {
             this.holds.right?.el===el
           ) continue;
 
-          el.object3D.getWorldPosition(this.world);
-          const d=this.center.distanceTo(this.world);
+          el.object3D.getWorldPosition(
+            this.world
+          );
 
-          if (d<nearestDistance) {
+          const distance=
+            this.center.distanceTo(this.world);
+
+          if (distance<nearestDistance) {
             nearest=el;
-            nearestDistance=d;
+            nearestDistance=distance;
           }
         }
 
         if (nearest) {
-          nearest.object3D.getWorldPosition(this.world);
+          nearest.object3D.getWorldPosition(
+            this.world
+          );
+
           this.holds[key]={
             el:nearest,
-            offset:this.world.clone().sub(this.center)
+            offset:this.world.clone()
+              .sub(this.center)
           };
 
           if (nearest.id==='near')
-            nearest.setAttribute('color','#fff176');
+            nearest.setAttribute(
+              'color','#fff176'
+            );
         }
       }
 
@@ -892,100 +1557,125 @@ AFRAME.registerComponent('pinch-grab-manager', {
 });
 
 /* MOVING PERSON */
-AFRAME.registerComponent('moving-person', {
+
+AFRAME.registerComponent('moving-person',{
   tick:function(time) {
     if (!$('#motion').checked) return;
 
     $('#person').object3D.position.x=
-      Math.sin(time/1600)*1.8;
+      2+Math.sin(time/1600)*0.55;
   }
 });
 
-/* XR MODE SELECTION */
-async function enterMode(mode) {
-  try {
-    if (!navigator.xr) {
-      alert('WebXR is unavailable in this browser.');
-      return;
-    }
-
-    const supported=await navigator.xr.isSessionSupported(
-      mode==='ar'?'immersive-ar':'immersive-vr'
-    );
-
-    if (!supported) {
-      alert(
-        mode==='ar'
-          ? 'AR is not supported by this browser.'
-          : 'VR is not supported by this browser.'
-      );
-      return;
-    }
-
-    // A-Frame handles session setup, reference spaces,
-    // controllers, hand tracking and its render loop.
-    scene.enterVR(mode==='ar');
-  } catch(e) {
-    console.error('Could not enter '+mode,e);
-    alert('Unable to start '+mode.toUpperCase()+': '+e.message);
-  }
-}
-
-$('#enterVR').addEventListener('click',()=>enterMode('vr'));
-$('#enterAR').addEventListener('click',()=>enterMode('ar'));
-
 /* MODE HANDLING */
+
 function setEnvironmentMode() {
   const ar=scene.is('ar-mode');
   const vr=scene.is('vr-mode');
 
   $('#virtualRoom').object3D.visible=!ar;
-  $('#buttonStation').object3D.visible=!ar;
 
   $('#modeStatus').textContent=
     ar?'Mixed Reality':
     vr?'Virtual Reality':'Browser preview';
 
-  if (ar) {
-    scene.removeAttribute('background');
-  } else {
-    scene.setAttribute(
-      'background','color','#d9d4ca'
-    );
-  }
-
-  // Shorten wrist panel in AR.
   $('#wristMotionGroup').object3D.visible=!ar;
+  $('#wristLightingGroup').object3D.visible=!ar;
 
-  const simulationGroup=$('#wristSimulationGroup');
+  const simulation=$('#wristSimulationGroup');
 
   if (ar) {
-    simulationGroup.object3D.position.y=0.083;
+    // Move simulation toggle up into the space
+    // previously occupied by VR-only controls.
+    simulation.object3D.position.y=0.29;
 
     $('#wristBackground').setAttribute(
       'height',0.52
     );
-    $('#wristBackground').object3D.position.y=0.04;
+
+    $('#wristBackground').object3D.position.y=
+      0.135;
+
+    scene.removeAttribute('background');
+
   } else {
-    simulationGroup.object3D.position.y=0;
+    simulation.object3D.position.y=0;
 
     $('#wristBackground').setAttribute(
-      'height',0.60
+      'height',0.79
     );
+
     $('#wristBackground').object3D.position.y=0;
+
+    setLighting(lightingMode);
   }
 
-  if (!ar && !vr)
+  if (!ar && !vr) {
     $('#wristPanel').object3D.visible=false;
+  }
 }
 
-scene.addEventListener('enter-ar',setEnvironmentMode);
-scene.addEventListener('exit-ar',setEnvironmentMode);
-scene.addEventListener('enter-vr',setEnvironmentMode);
-scene.addEventListener('exit-vr',setEnvironmentMode);
-scene.addEventListener('loaded',setEnvironmentMode);
+/* XR ENTRY */
+
+async function enterMode(mode) {
+  try {
+    if (!navigator.xr) {
+      alert('WebXR is unavailable.');
+      return;
+    }
+
+    const sessionType=
+      mode==='ar'?'immersive-ar':'immersive-vr';
+
+    const supported=
+      await navigator.xr.isSessionSupported(
+        sessionType
+      );
+
+    if (!supported) {
+      alert(mode.toUpperCase()+
+        ' is unavailable on this browser.');
+      return;
+    }
+
+    scene.enterVR(mode==='ar');
+
+  } catch(error) {
+    console.error(error);
+    alert('Unable to enter '+mode.toUpperCase());
+  }
+}
+
+$('#enterVR').addEventListener(
+  'click',()=>enterMode('vr')
+);
+
+$('#enterAR').addEventListener(
+  'click',()=>enterMode('ar')
+);
+
+scene.addEventListener(
+  'enter-vr',setEnvironmentMode
+);
+
+scene.addEventListener(
+  'exit-vr',setEnvironmentMode
+);
+
+scene.addEventListener(
+  'enter-ar',setEnvironmentMode
+);
+
+scene.addEventListener(
+  'exit-ar',setEnvironmentMode
+);
+
+scene.addEventListener(
+  'loaded',setEnvironmentMode
+);
 
 /* BROWSER CONTROLS */
+
 $('#field').addEventListener('input',e=>{
   fieldPercent=Number(e.target.value);
   syncSettings();
@@ -996,21 +1686,38 @@ $('#dist').addEventListener('input',e=>{
   syncSettings();
 });
 
-$('#glare').addEventListener('change',syncSettings);
-$('#motion').addEventListener('change',syncSettings);
-
-$('#toggle').addEventListener('click',()=>
-  applyAction('simulation')
+$('#glare').addEventListener(
+  'change',syncSettings
 );
 
-/* ACTIVATE SYSTEMS */
+$('#motion').addEventListener(
+  'change',syncSettings
+);
+
+$('#toggle').addEventListener(
+  'click',()=>applyAction('simulation')
+);
+
+document.querySelectorAll(
+  '[data-light]'
+).forEach(button=>{
+  button.addEventListener('click',()=>{
+    setLighting(button.dataset.light);
+  });
+});
+
+/* INITIALIZATION */
+
+buildRoomDetails();
+
 scene.setAttribute('wrist-follow','');
 scene.setAttribute('finger-button-touch','');
-scene.setAttribute('sound-touch','');
 scene.setAttribute('pinch-grab-manager','');
 scene.setAttribute('moving-person','');
 
 syncSettings();
+setLighting('day');
+
 </script>
 </body>
 </html>
